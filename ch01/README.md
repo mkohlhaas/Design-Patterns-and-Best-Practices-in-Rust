@@ -17,7 +17,7 @@ This directory contains code examples from Chapter 1 of the book. In this chapte
 To run the bad_calculator example:
 
 ```bash
-cd bad_calculator
+cd 2-bad_calculator
 cargo run
 ```
 

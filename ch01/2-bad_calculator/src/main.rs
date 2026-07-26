@@ -1,12 +1,18 @@
+#![allow(unused)]
+
 use std::io::Write;
 use std::process::exit;
 
-fn evaluate_expression(expression: &str) -> Result<String, String> {
+type ExprResult = String;
+type ExprError = String;
+
+fn evaluate_expression(expression: &str) -> Result<ExprResult, ExprError> {
   todo!()
 }
 
 fn main() {
   let mut buf = String::new();
+
   loop {
     print!("> ");
     std::io::stdout().flush().unwrap();
