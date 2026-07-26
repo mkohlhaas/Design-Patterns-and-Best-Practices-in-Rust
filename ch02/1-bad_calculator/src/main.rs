@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::io::Write;
 use std::ops::{Deref, DerefMut};
 use std::process::exit;
@@ -22,14 +24,14 @@ trait Operator {
   fn apply(&mut self) -> Box<dyn Operand>;
 }
 
-trait UnaryOperator: crate::Operator {
+trait UnaryOperator: Operator {
   fn apply_unary(&self, operand: Box<dyn Operand>) -> Box<dyn Operand>;
-
   fn apply(&mut self) -> Box<dyn Operand> {
     let operand = self.pop_operand();
     self.apply_unary(operand)
   }
 }
+
 trait BinaryOperator: Operator {
   fn apply_binary(
     &self,
@@ -62,7 +64,7 @@ struct AdditionOperator {
   pub stack: OperandStack,
 }
 
-impl crate::AdditionOperator {
+impl AdditionOperator {
   fn new() -> Self {
     Self {
       stack: OperandStack::new(),
@@ -88,20 +90,21 @@ impl Operator for AdditionOperator {
   }
 
   fn apply(&mut self) -> Box<dyn Operand> {
+    // Operand 2 was push last, so it is popped first
     let operand2 = self.pop_operand();
     let operand1 = self.pop_operand();
     self.apply_binary(operand1, operand2)
   }
 }
+
 impl BinaryOperator for AdditionOperator {
   fn apply_binary(
     &self,
     operand1: Box<dyn Operand>,
     operand2: Box<dyn Operand>,
   ) -> Box<dyn Operand> {
-    // Operand 2 was push last, so it is popped first
-    let inner_operand2 = operand2.as_ref().evaluate();
-    let inner_operand1 = operand1.evaluate();
+    let inner_operand2 = operand2.as_ref().evaluate(); // dereferencing explicitly/manually
+    let inner_operand1 = operand1.evaluate(); // using Deref of Box
     let result = inner_operand1 + inner_operand2;
     Box::new(Value(result))
   }

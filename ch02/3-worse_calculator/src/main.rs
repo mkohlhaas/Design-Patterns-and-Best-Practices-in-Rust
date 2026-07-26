@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::io::Write;
 use std::process::exit;
 
@@ -54,13 +56,13 @@ impl Operator {
         precedence: 0,
         symbol: '+',
       },
-      "sub" => Operator::Addition {
+      "sub" => Operator::Subtraction {
         lhs: operand1,
         rhs: operand2.unwrap(),
         precedence: 0,
         symbol: '-',
       },
-      "mul" => Operator::Division {
+      "mul" => Operator::Multiplication {
         lhs: operand1,
         rhs: operand2.unwrap(),
         precedence: 1,
@@ -111,33 +113,38 @@ impl Operator {
   }
 }
 fn evaluate_expression(expression: &str) -> Result<String, String> {
-  // let addition = Operator::Addition { lhs: Operand::Value(2.0), rhs: Operand::Value(3.0) };
-  // let subtraction = Operator::Subtraction { lhs: Operand::Value(5.0), rhs: Operand::Value(1.0) };
-  // let negation = Operator::Negation { operand: Operand::Value(-7.0) };
-  //
-  // println!("Addition result: {}", addition.apply().evaluate());
-  // println!("Subtraction result: {}", subtraction.apply().evaluate());
-  // println!("Negation result: {}", negation.apply().evaluate());
   todo!()
 }
 
 fn main() {
-  let mut buf = String::new();
+  {
+    let addition = Operator::new("add".into(), Operand::Value(2.0), Some(Operand::Value(3.0)));
+    let subtraction = Operator::new("sub".into(), Operand::Value(5.0), Some(Operand::Value(1.0)));
+    let negation = Operator::new("neg".into(), Operand::Value(-7.0), None);
 
-  loop {
-    print!("> ");
-    std::io::stdout().flush().unwrap();
-
-    buf.clear();
-    std::io::stdin().read_line(&mut buf).unwrap();
-
-    if buf.trim() == "exit" {
-      exit(0)
-    }
-
-    match evaluate_expression(&buf) {
-      Ok(result) => println!("{result}"),
-      Err(error) => println!("Error: {error}"),
-    }
+    println!("Addition result: {}", addition.apply().evaluate()); // 5
+    println!("Subtraction result: {}", subtraction.apply().evaluate()); // 6
+    println!("Negation result: {}", negation.apply().evaluate()); // 7
   }
+
+  // {
+  //   let mut buf = String::new();
+  //
+  //   loop {
+  //     print!("> ");
+  //     std::io::stdout().flush().unwrap();
+  //
+  //     buf.clear();
+  //     std::io::stdin().read_line(&mut buf).unwrap();
+  //
+  //     if buf.trim() == "exit" {
+  //       exit(0)
+  //     }
+  //
+  //     match evaluate_expression(&buf) {
+  //       Ok(result) => println!("{result}"),
+  //       Err(error) => println!("Error: {error}"),
+  //     }
+  //   }
+  // }
 }

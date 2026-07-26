@@ -1,6 +1,9 @@
 use std::io::{Cursor, Read};
 
-fn find_block(_message: &[u8], _block_id: u64) -> (usize, usize) {
+type Position = usize;
+type ByteCount = usize;
+
+fn find_block(_message: &[u8], _block_id: u64) -> (Position, ByteCount) {
   todo!()
 }
 

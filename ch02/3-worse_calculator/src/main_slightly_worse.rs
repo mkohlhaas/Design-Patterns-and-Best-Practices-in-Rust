@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // OperandOperandOperandOperand
 mod r#main_slightly_worse;
 use std::io::Write;
@@ -5,12 +7,13 @@ use std::ops::{Deref, DerefMut, Range};
 use std::process::exit;
 use std::time::{Duration, Instant};
 
+#[derive(Debug)]
 enum Operand {
   NumericValue(f64),
   StringValue(String),
   RangeValue(Range<usize>),
   InstantValue(Instant),
-  DurartionValue,
+  DurationValue,
 }
 
 enum ArithmeticOperator {
@@ -93,8 +96,8 @@ fn main() {
     }
 
     match evaluate_expression(&buf) {
-      Ok(result) => println!("{result}"),
-      Err(error) => println!("Error: {error}"),
+      Ok(result) => println!("{result:?}"),
+      Err(error) => println!("Error: {error:?}"),
     }
   }
 }

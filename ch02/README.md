@@ -26,22 +26,22 @@ This directory contains code examples from Chapter 2 of the book, which explores
 Each example can be built and run with cargo:
 
 ```bash
-cd bad_calculator
+cd 1-bad_calculator
 cargo run
 ```
 
 ```bash
-cd not_so_bad_calculator
+cd 2-not_so_bad_calculator
 cargo run
 ```
 
 ```bash
-cd worse_calculator
+cd 3-worse_calculator
 cargo run
 ```
 
 ```bash
-cd pets
+cd 4-pets
 cargo run
 ```
 
