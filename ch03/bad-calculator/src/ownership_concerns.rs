@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // Ch3: Avoiding Ownership Concerns
 
 // This file demonstrates the anti-pattern of avoiding ownership concerns

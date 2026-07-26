@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // Ch3: Cloning Everything
 
 // This file demonstrates the anti-pattern of excessive cloning
@@ -56,8 +58,7 @@ impl BadCalculator {
 
   fn evaluate(&self, expression: &str) -> Result<f64, String> {
     let tokens = self.tokenize(expression);
-    let result = self.evaluate_tokens(tokens)?;
-    Ok(result)
+    self.evaluate_tokens(tokens)
   }
 
   fn evaluate_tokens(&self, tokens: Vec<Token>) -> Result<f64, String> {

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // Ch3: Misusing Rc and RefCell
 
 // This file demonstrates the anti-pattern of overusing Rc<RefCell<>>
@@ -82,7 +84,7 @@ impl BadCalculator {
 
   fn process_tokens(
     &self,
-    tokens: &mut Vec<Token>,
+    tokens: &mut [Token],
     variables: &HashMap<String, f64>,
   ) -> Result<f64, String> {
     // Simple implementation for demonstration
@@ -129,12 +131,10 @@ impl BadCalculator {
 
 // BETTER APPROACH: Using clear ownership
 
-#[derive(Clone, Debug)]
 struct ParsedExpression {
   tokens: Vec<Token>,
 }
 
-#[derive(Clone, Debug)]
 struct Calculation {
   expression: String,
   tokens: Vec<Token>,
