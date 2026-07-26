@@ -1,7 +1,7 @@
 [package]
 name = "bad-calculator-ch4"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 authors = ["Evan J. Williams <evanjpw@gmail.com>"]
 description = "Examples of anti-patterns from Chapter 4"
 
