@@ -8,7 +8,7 @@ This directory contains code examples from Chapter 1 of the book. In this chapte
    - Basic framework for a calculator application
    - Demonstrates the initial skeleton that we'll build on in future chapters
 
-2. **block_finder.rs**: A standalone example that demonstrates ownership issues
+2. **block_finder**: A standalone example that demonstrates ownership issues
    - Shows how ownership and borrowing constraints can affect design
    - Example of attempting to use a Rust-unfriendly design pattern
 
@@ -21,6 +21,6 @@ cd bad_calculator
 cargo run
 ```
 
-The block_finder.rs file is primarily for illustration and isn't intended to be run directly as it demonstrates issues with designs that don't align with Rust's ownership model.
+The block_finder file is primarily for illustration and isn't intended to be run directly as it demonstrates issues with designs that don't align with Rust's ownership model.
 
 These examples serve as a foundation for understanding why Rust requires different approaches to design, which we'll explore in later chapters.

@@ -19,7 +19,7 @@ This directory contains code examples from Chapter 2 of the book, which explores
 4. **pets**: A simple example illustrating limitations of trait-based polymorphism
    - Demonstrates the differences between Rust traits and OO interfaces
 
-5. **block_finder.rs**: Another example of OO design issues
+5. **block_finder**: Another example of OO design issues
 
 ## Running the Examples
 
