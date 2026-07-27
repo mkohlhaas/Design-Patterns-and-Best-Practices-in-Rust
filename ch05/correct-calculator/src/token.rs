@@ -1,74 +1,31 @@
+#![allow(unused)]
+
+// "Rather than creating a complex class hierarchy, we'll use Rust's enums (which provide sum type
+// functionality) to represent our different token types."
+
+// "Rust's enum system gives us polymorphism through variants rather than inheritance, and pattern
+// matching provides exhaustive handling at compile time rather than virtual dispatch at runtime."
+
+// "In many languages, factories are a pattern that we impose upon the language. For Rust, factories
+// are the idiomatic and natural way to create type instances."
+
 // token.rs - Core token types and factory methods
 
-// Number formats
-#[derive(Debug, Clone, PartialEq)]
-pub enum NumberFormat {
-  Decimal,
-  Scientific,
-  Engineering,
-}
-
-// Basic token types
-#[derive(Debug, Clone, PartialEq)]
-pub enum Operator {
-  Add,
-  Subtract,
-  Multiply,
-  Divide,
-  Power,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum Function {
-  Sin,
-  Cos,
-  Tan,
-  Sqrt,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Number {
-  pub value: f64,
-  pub format: NumberFormat,
-}
-
-impl Number {
-  pub fn new(value: f64) -> Self {
-    Self {
-      value,
-      format: NumberFormat::Decimal,
-    }
-  }
-
-  pub fn with_format(value: f64, format: NumberFormat) -> Self {
-    Self { value, format }
-  }
-
-  pub fn format(&self) -> String {
-    match self.format {
-      NumberFormat::Decimal => format!("{}", self.value),
-      NumberFormat::Scientific => format!("{:e}", self.value),
-      NumberFormat::Engineering => {
-        let exp = self.value.abs().log10().floor();
-        let adj_exp = (exp - exp % 3.0).floor();
-        let coeff = self.value / 10_f64.powf(adj_exp);
-        format!("{}e{}", coeff, adj_exp)
-      }
-    }
-  }
-}
-
+// NOTE: maybe this should be Copy
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
-  Number(Number),
-  Operator(Operator),
-  Function(Function),
+  Number(Number),     // NOTE:hiccup is idiomatic Rust
+  Operator(Operator), // NOTE:hiccup is idiomatic Rust
+  Function(Function), // NOTE:hiccup is idiomatic Rust
   Variable(String),
   OpenParen,
   CloseParen,
 }
 
-// Factory methods for Token
+// ////////////////////////////////////// //
+// Factory methods/constructors for Token //
+// ////////////////////////////////////// //
+
 impl Token {
   // Factory method for creating number tokens
   pub fn number(value: f64) -> Self {
@@ -77,7 +34,7 @@ impl Token {
 
   // Factory method for scientific notation
   pub fn scientific_number(value: f64) -> Self {
-    Self::Number(Number::with_format(value, NumberFormat::Scientific))
+    Self::Number(Number::new_with_format(value, NumberFormat::Scientific))
   }
 
   // Factory method for operators
@@ -91,16 +48,17 @@ impl Token {
   }
 
   // Factory method for variables
+  // NOTE: `impl Into<String>`
   pub fn variable(name: impl Into<String>) -> Self {
     Self::Variable(name.into())
   }
 
-  // Factory method from string
+  // Factory method for all tokens from string
   pub fn from_str(s: &str) -> Result<Self, String> {
     // Try parsing as a number first
     if let Ok(num) = s.parse::<f64>() {
       if s.contains('e') || s.contains('E') {
-        return Ok(Self::Number(Number::with_format(
+        return Ok(Self::Number(Number::new_with_format(
           num,
           NumberFormat::Scientific,
         )));
@@ -129,4 +87,66 @@ impl Token {
       _ => Err(format!("Invalid token: {}", s)),
     }
   }
+}
+
+// NOTE: maybe this should be Copy
+#[derive(Default, Debug, Clone, PartialEq)]
+pub enum NumberFormat {
+  #[default]
+  Decimal,
+  Scientific,
+  Engineering,
+  // More formats can be added …
+}
+
+// NOTE: maybe this should be Copy
+#[derive(Default, Debug, Clone, PartialEq)]
+pub struct Number {
+  pub value: f64,
+  pub format: NumberFormat,
+}
+
+impl Number {
+  pub fn new(value: f64) -> Self {
+    Self {
+      value,
+      format: Default::default(),
+    }
+  }
+
+  pub fn new_with_format(value: f64, format: NumberFormat) -> Self {
+    Self { value, format }
+  }
+
+  pub fn format(&self) -> String {
+    match self.format {
+      NumberFormat::Decimal => format!("{}", self.value),
+      NumberFormat::Scientific => format!("{:e}", self.value),
+      NumberFormat::Engineering => {
+        let exp = self.value.abs().log10().floor();
+        let adj_exp = (exp - exp % 3.0).floor();
+        let coeff = self.value / 10_f64.powf(adj_exp);
+        format!("{}e{}", coeff, adj_exp)
+      }
+    }
+  }
+}
+
+// NOTE: maybe this should be Copy
+#[derive(Debug, Clone, PartialEq)]
+pub enum Operator {
+  Add,
+  Subtract,
+  Multiply,
+  Divide,
+  Power,
+}
+
+// NOTE: maybe this should be Copy
+#[derive(Debug, Clone, PartialEq)]
+pub enum Function {
+  Sin,
+  Cos,
+  Tan,
+  Sqrt,
 }

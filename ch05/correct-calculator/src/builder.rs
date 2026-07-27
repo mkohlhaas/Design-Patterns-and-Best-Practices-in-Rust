@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // builder.rs - Builder pattern implementation
 
 use crate::token::{Operator, Token};
@@ -7,6 +9,7 @@ pub struct Expression {
   tokens: Vec<Token>,
 }
 
+#[derive(Default)]
 pub struct ExpressionBuilder {
   tokens: Vec<Token>,
   paren_count: i32, // Track parentheses balance
@@ -14,10 +17,7 @@ pub struct ExpressionBuilder {
 
 impl ExpressionBuilder {
   pub fn new() -> Self {
-    Self {
-      tokens: Vec::new(),
-      paren_count: 0,
-    }
+    Default::default()
   }
 
   // Add a number to the expression

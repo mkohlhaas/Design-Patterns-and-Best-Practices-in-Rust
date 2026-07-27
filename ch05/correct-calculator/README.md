@@ -1,6 +1,7 @@
 # Correct Calculator - Chapter 5
 
-This directory contains the beginnings of the "Correct Calculator" project, demonstrating Rust design patterns related to object creation.
+This directory contains the beginnings of the "Correct Calculator" project,
+demonstrating Rust design patterns related to object creation.
 
 ## Features Implemented in Chapter 5
 - Basic calculator structure with tokens and expressions
@@ -16,4 +17,6 @@ To build and run the calculator:
 cargo run
 ```
 
-This initial implementation focuses on the structure and creation patterns. In subsequent chapters, we'll add more functionality for expression evaluation, state management, and advanced features.
+This initial implementation focuses on the structure and creation patterns. In
+subsequent chapters, we'll add more functionality for expression evaluation,
+state management, and advanced features.

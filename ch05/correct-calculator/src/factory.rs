@@ -1,7 +1,24 @@
+#![allow(unused)]
+
+// "Each calculator mode needs its own set of tokens, operators, and evaluation rules."
+
+// "The Abstract Factory concept often maps more naturally to traits and associated types."
+
+// "Instead of the complex inheritance hierarchies often seen in object-oriented languages, we get a
+// clean, type-safe solution."
+
 // factory.rs - Abstract Factory implementation
 
-use crate::token::{Function, Number, NumberFormat, Operator, Token};
+use crate::Token;
+use crate::token::{Function, Number, NumberFormat, Operator};
 
+// //////////////////// //
+// 1. Abstract Products //
+// //////////////////// //
+
+// We want to produce Tokens!
+
+// NOTE: These traits are useless!
 // Trait for number tokens
 pub trait NumberToken {
   fn value(&self) -> f64;
@@ -14,20 +31,18 @@ pub trait OperatorToken {
   fn symbol(&self) -> &'static str;
 }
 
-// Abstract Factory trait
-pub trait TokenFactory {
-  type Number: NumberToken;
-  type Operator: OperatorToken;
+// //////////////////// //
+// 2. Concrete Products //
+// //////////////////// //
 
-  fn create_number(&self, s: &str) -> Result<Self::Number, String>;
-  fn create_operator(&self, s: &str) -> Result<Self::Operator, String>;
-}
+// /////////////////////// //
+// 2.1 Standard Calculator //
+// /////////////////////// //
 
 // Standard calculator implementation
 #[derive(Debug, Clone, PartialEq)]
-pub struct StandardNumber(pub Number);
-
-impl NumberToken for StandardNumber {
+pub struct StandardNumberToken(pub Number);
+impl NumberToken for StandardNumberToken {
   fn value(&self) -> f64 {
     self.0.value
   }
@@ -38,9 +53,8 @@ impl NumberToken for StandardNumber {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct StandardOperator(pub Operator);
-
-impl OperatorToken for StandardOperator {
+pub struct StandardOperatorToken(pub Operator);
+impl OperatorToken for StandardOperatorToken {
   fn precedence(&self) -> u8 {
     match self.0 {
       Operator::Add | Operator::Subtract => 1,
@@ -60,37 +74,14 @@ impl OperatorToken for StandardOperator {
   }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct StandardFactory;
-
-impl TokenFactory for StandardFactory {
-  type Number = StandardNumber;
-  type Operator = StandardOperator;
-
-  fn create_number(&self, s: &str) -> Result<Self::Number, String> {
-    match s.parse::<f64>() {
-      Ok(value) => Ok(StandardNumber(Number::new(value))),
-      Err(_) => Err(format!("Invalid number: {}", s)),
-    }
-  }
-
-  fn create_operator(&self, s: &str) -> Result<Self::Operator, String> {
-    match s {
-      "+" => Ok(StandardOperator(Operator::Add)),
-      "-" => Ok(StandardOperator(Operator::Subtract)),
-      "*" => Ok(StandardOperator(Operator::Multiply)),
-      "/" => Ok(StandardOperator(Operator::Divide)),
-      "^" => Ok(StandardOperator(Operator::Power)),
-      _ => Err(format!("Invalid operator: {}", s)),
-    }
-  }
-}
+// ////////////////////////// //
+// 2.2. Scientific calculator //
+// ////////////////////////// //
 
 // Scientific calculator implementation
 #[derive(Debug, Clone, PartialEq)]
-pub struct ScientificNumber(pub Number);
-
-impl NumberToken for ScientificNumber {
+pub struct ScientificNumberToken(pub Number);
+impl NumberToken for ScientificNumberToken {
   fn value(&self) -> f64 {
     self.0.value
   }
@@ -105,33 +96,32 @@ impl NumberToken for ScientificNumber {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ScientificOperator {
+pub enum ScientificOperatorToken {
   Basic(Operator),
   Function(Function),
 }
-
-impl OperatorToken for ScientificOperator {
+impl OperatorToken for ScientificOperatorToken {
   fn precedence(&self) -> u8 {
     match self {
-      ScientificOperator::Basic(op) => match op {
+      ScientificOperatorToken::Basic(op) => match op {
         Operator::Add | Operator::Subtract => 1,
         Operator::Multiply | Operator::Divide => 2,
         Operator::Power => 3,
       },
-      ScientificOperator::Function(_) => 4,
+      ScientificOperatorToken::Function(_) => 4,
     }
   }
 
   fn symbol(&self) -> &'static str {
     match self {
-      ScientificOperator::Basic(op) => match op {
+      ScientificOperatorToken::Basic(op) => match op {
         Operator::Add => "+",
         Operator::Subtract => "-",
         Operator::Multiply => "*",
         Operator::Divide => "/",
         Operator::Power => "^",
       },
-      ScientificOperator::Function(func) => match func {
+      ScientificOperatorToken::Function(func) => match func {
         Function::Sin => "sin",
         Function::Cos => "cos",
         Function::Tan => "tan",
@@ -141,14 +131,64 @@ impl OperatorToken for ScientificOperator {
   }
 }
 
+// /////////////////// //
+// 3. Abstract Factory //
+// /////////////////// //
+
+// Abstract Factory trait with associated types
+pub trait TokenFactory {
+  type Number: NumberToken;
+  type Operator: OperatorToken;
+
+  fn create_number_token(&self, s: &str) -> Result<Self::Number, String>;
+  fn create_operator_token(&self, s: &str) -> Result<Self::Operator, String>;
+}
+
+// ///////////////////// //
+// 4. Concrete Factories //
+// ///////////////////// //
+
+// ////////////////////////// //
+// 4.1 Standard Token Factory //
+// ////////////////////////// //
+
+#[derive(Debug, Clone, Copy)]
+pub struct StandardTokenFactory;
+impl TokenFactory for StandardTokenFactory {
+  type Number = StandardNumberToken;
+  type Operator = StandardOperatorToken;
+
+  fn create_number_token(&self, s: &str) -> Result<Self::Number, String> {
+    match s.parse::<f64>() {
+      Ok(value) => Ok(StandardNumberToken(Number::new(value))),
+      Err(_) => Err(format!("Invalid number: {}", s)),
+    }
+  }
+
+  fn create_operator_token(&self, s: &str) -> Result<Self::Operator, String> {
+    match s {
+      "+" => Ok(StandardOperatorToken(Operator::Add)),
+      "-" => Ok(StandardOperatorToken(Operator::Subtract)),
+      "*" => Ok(StandardOperatorToken(Operator::Multiply)),
+      "/" => Ok(StandardOperatorToken(Operator::Divide)),
+      "^" => Ok(StandardOperatorToken(Operator::Power)),
+      _ => Err(format!("Invalid operator: {}", s)),
+    }
+  }
+}
+
+// //////////////////////////// //
+// 4.2 Scientific Token Factory //
+// //////////////////////////// //
+
 #[derive(Debug, Clone, Copy)]
 pub struct ScientificFactory;
 
 impl TokenFactory for ScientificFactory {
-  type Number = ScientificNumber;
-  type Operator = ScientificOperator;
+  type Number = ScientificNumberToken;
+  type Operator = ScientificOperatorToken;
 
-  fn create_number(&self, s: &str) -> Result<Self::Number, String> {
+  fn create_number_token(&self, s: &str) -> Result<Self::Number, String> {
     // Handle both scientific and standard notation
     match s.parse::<f64>() {
       Ok(value) => {
@@ -157,25 +197,60 @@ impl TokenFactory for ScientificFactory {
         } else {
           NumberFormat::Decimal
         };
-        Ok(ScientificNumber(Number::with_format(value, format)))
+        Ok(ScientificNumberToken(Number::new_with_format(
+          value, format,
+        )))
       }
       Err(_) => Err(format!("Invalid number: {}", s)),
     }
   }
 
-  fn create_operator(&self, s: &str) -> Result<Self::Operator, String> {
+  fn create_operator_token(&self, s: &str) -> Result<Self::Operator, String> {
     // Scientific calculator supports functions
     match s {
-      "+" => Ok(ScientificOperator::Basic(Operator::Add)),
-      "-" => Ok(ScientificOperator::Basic(Operator::Subtract)),
-      "*" => Ok(ScientificOperator::Basic(Operator::Multiply)),
-      "/" => Ok(ScientificOperator::Basic(Operator::Divide)),
-      "^" => Ok(ScientificOperator::Basic(Operator::Power)),
-      "sin" => Ok(ScientificOperator::Function(Function::Sin)),
-      "cos" => Ok(ScientificOperator::Function(Function::Cos)),
-      "tan" => Ok(ScientificOperator::Function(Function::Tan)),
-      "sqrt" => Ok(ScientificOperator::Function(Function::Sqrt)),
+      "+" => Ok(ScientificOperatorToken::Basic(Operator::Add)),
+      "-" => Ok(ScientificOperatorToken::Basic(Operator::Subtract)),
+      "*" => Ok(ScientificOperatorToken::Basic(Operator::Multiply)),
+      "/" => Ok(ScientificOperatorToken::Basic(Operator::Divide)),
+      "^" => Ok(ScientificOperatorToken::Basic(Operator::Power)),
+      "sin" => Ok(ScientificOperatorToken::Function(Function::Sin)),
+      "cos" => Ok(ScientificOperatorToken::Function(Function::Cos)),
+      "tan" => Ok(ScientificOperatorToken::Function(Function::Tan)),
+      "sqrt" => Ok(ScientificOperatorToken::Function(Function::Sqrt)),
       _ => Err(format!("Invalid operator: {}", s)),
     }
+  }
+}
+
+// ////////////// //
+// 5. Client Code //
+// ////////////// //
+
+struct Calculator<F: TokenFactory> {
+  factory: F,
+  expression: Vec<Token>,
+}
+
+impl<F: TokenFactory> Calculator<F> {
+  pub fn new(factory: F) -> Self {
+    Self {
+      factory,
+      expression: Vec::new(),
+    }
+  }
+
+  // TODO: parse is wrongly implemented
+  pub fn parse(&mut self, input: &str) -> Result<(), String> {
+    for token in input.split_whitespace() {
+      // Try operator first
+      if let Ok(op) = self.factory.create_operator_token(token) {
+        self.expression.push(Token::Operator(op));
+        continue;
+      }
+      // Must be a number then
+      let num = self.factory.create_number_token(token)?;
+      self.expression.push(Token::Number(num));
+    }
+    Ok(())
   }
 }

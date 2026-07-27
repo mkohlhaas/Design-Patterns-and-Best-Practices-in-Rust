@@ -1,11 +1,14 @@
+#![allow(unused)]
+
 // config.rs - Configuration (alternative to Singleton)
 
 use crate::token::NumberFormat;
 use std::sync::OnceLock;
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub enum AngleMode {
   Degrees,
+  #[default]
   Radians,
 }
 
@@ -20,8 +23,8 @@ impl Default for CalculatorConfig {
   fn default() -> Self {
     Self {
       precision: 10,
-      angle_mode: AngleMode::Radians,
-      notation: NumberFormat::Decimal,
+      angle_mode: Default::default(),
+      notation: Default::default(),
     }
   }
 }
@@ -31,7 +34,7 @@ impl CalculatorConfig {
   pub fn scientific() -> Self {
     Self {
       precision: 15,
-      angle_mode: AngleMode::Radians,
+      angle_mode: Default::default(),
       notation: NumberFormat::Scientific,
     }
   }
@@ -61,6 +64,7 @@ pub fn get_global_config() -> &'static CalculatorConfig {
 // Thread-safe calculator with shared config
 use std::sync::Arc;
 
+#[derive(Default)]
 pub struct CalculatorPool {
   shared_config: Arc<CalculatorConfig>,
   // In a real application, this would store calculator instances
@@ -71,7 +75,7 @@ impl CalculatorPool {
   pub fn new(config: CalculatorConfig) -> Self {
     Self {
       shared_config: Arc::new(config),
-      _calculators: Vec::new(),
+      _calculators: Default::default(),
     }
   }
 
