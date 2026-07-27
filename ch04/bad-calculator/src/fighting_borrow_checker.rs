@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // Ch4: Trying to Defeat the Borrow Checker
 
 // This file demonstrates the anti-pattern of fighting against the borrow checker
@@ -28,12 +30,11 @@ impl BadCalculator {
 
   fn evaluate(&mut self, expression: &str) -> Result<f64, String> {
     // Try to parse as a reference to previous result
-    if expression.starts_with("result") {
-      if let Some(index) = expression.strip_prefix("result") {
-        if let Ok(offset) = index.trim().parse::<usize>() {
-          return self.get_previous_result(offset);
-        }
-      }
+    if expression.starts_with("result")
+      && let Some(index) = expression.strip_prefix("result")
+      && let Ok(offset) = index.trim().parse::<usize>()
+    {
+      return self.get_previous_result(offset);
     }
 
     // Parse and evaluate the expression
@@ -87,32 +88,32 @@ impl BadCalculator {
     Ok(tokens)
   }
 
-  // This will not compile! Self is already mutably borrowed
+  // NOTE: This will not compile! Self is already mutably borrowed (???)
   fn parse_and_evaluate(&mut self, expression: &str) -> Result<f64, String> {
     let tokens = self.tokenize(expression)?;
 
     for token in &tokens {
       if let Token::ResultReference(index) = token {
-        // But we can't do this - we're already mutably borrowed!
-        // let prev = self.get_previous_result(*index)?;
+        // NOTE: But we can't do this - we're already mutably borrowed! (???)
+        let prev = self.get_previous_result(*index)?;
 
         // We'd have to use a hack like this:
-        let memory = &self.memory;
-        let current = self.current_value;
-        let prev = if *index == 0 {
-          current
-        } else {
-          let pos = memory
-            .len()
-            .checked_sub(*index)
-            .ok_or("Invalid result index")?;
-          *memory
-            .get(pos)
-            .ok_or_else(|| "Invalid result index".to_string())?
-        };
+        // let memory = &self.memory;
+        // let current = self.current_value;
+        // let prev = if *index == 0 {
+        //   current
+        // } else {
+        //   let pos = memory
+        //     .len()
+        //     .checked_sub(*index)
+        //     .ok_or("Invalid result index")?;
+        //   *memory
+        //     .get(pos)
+        //     .ok_or_else(|| "Invalid result index".to_string())?
+        // };
 
         // Use prev in calculation...
-        let _ = prev;
+        // let _ = prev;
       }
     }
 
@@ -124,15 +125,15 @@ impl BadCalculator {
 // BETTER APPROACH: Working with the borrow checker
 
 struct Calculator {
-  memory: Vec<f64>,
   current_value: f64,
+  memory: Vec<f64>,
 }
 
 impl Calculator {
   fn new() -> Self {
     Self {
-      memory: Vec::new(),
       current_value: 0.0,
+      memory: Vec::new(),
     }
   }
 
@@ -231,26 +232,51 @@ impl Calculator {
 }
 
 fn main() {
-  // Note: The BadCalculator code won't compile as written
+  // NOTE: The BadCalculator code won't compile as written
   // This is intentional to demonstrate the problem
+
+  println!("--- BAD APPROACH: Fighting the Borrow Checker ---");
+  {
+    let mut calc = BadCalculator::new();
+
+    match calc.evaluate("5 + 7") {
+      Ok(result) => println!("5 + 7 = {}", result),
+      Err(e) => println!("Error: {}", e),
+    }
+
+    match calc.evaluate("result0 * 2") {
+      Ok(result) => println!("result0 * 2 = {}", result),
+      Err(e) => println!("Error: {}", e),
+    }
+
+    match calc.evaluate("result1 - result0") {
+      Ok(result) => println!("result1 - result0 = {}", result),
+      Err(e) => println!("Error: {}", e),
+    }
+  }
+
+  println!();
   println!("In a real program, the bad approach would not compile.");
   println!("This example shows how to structure code to work with the borrow checker.\n");
 
   println!("--- BETTER APPROACH: Working with the Borrow Checker ---");
-  let mut calc = Calculator::new();
 
-  match calc.evaluate("5 + 7") {
-    Ok(result) => println!("5 + 7 = {}", result),
-    Err(e) => println!("Error: {}", e),
-  }
+  {
+    let mut calc = Calculator::new();
 
-  match calc.evaluate("result0 * 2") {
-    Ok(result) => println!("result0 * 2 = {}", result),
-    Err(e) => println!("Error: {}", e),
-  }
+    match calc.evaluate("5 + 7") {
+      Ok(result) => println!("5 + 7 = {}", result),
+      Err(e) => println!("Error: {}", e),
+    }
 
-  match calc.evaluate("result1 - result0") {
-    Ok(result) => println!("result1 - result0 = {}", result),
-    Err(e) => println!("Error: {}", e),
+    match calc.evaluate("result0 * 2") {
+      Ok(result) => println!("result0 * 2 = {}", result),
+      Err(e) => println!("Error: {}", e),
+    }
+
+    match calc.evaluate("result1 - result0") {
+      Ok(result) => println!("result1 - result0 = {}", result),
+      Err(e) => println!("Error: {}", e),
+    }
   }
 }
