@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // facade.rs - Facade pattern implementation
 
 use crate::adapter::ScientificOperations;

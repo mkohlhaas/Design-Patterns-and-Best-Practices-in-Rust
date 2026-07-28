@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // builder.rs - Builder pattern implementation
 
 use crate::token::{Operator, Token};

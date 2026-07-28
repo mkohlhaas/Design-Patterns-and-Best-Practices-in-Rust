@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // decorator.rs - Decorator pattern implementation
 
 use crate::expression::Expression;

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // config.rs - Configuration (alternative to Singleton)
 
 use crate::token::NumberFormat;

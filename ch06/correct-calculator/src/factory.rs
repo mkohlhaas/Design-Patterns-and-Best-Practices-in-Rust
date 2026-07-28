@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // factory.rs - Abstract Factory implementation
 
 use crate::token::{Function, Number, NumberFormat, Operator, Token};

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // bridge.rs - Bridge pattern implementation
 
 use crate::expression::Expression;

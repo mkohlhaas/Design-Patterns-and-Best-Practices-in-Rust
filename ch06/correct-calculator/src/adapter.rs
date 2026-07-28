@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // adapter.rs - Adapter pattern implementation
 
 use crate::config::AngleMode;
@@ -205,30 +207,21 @@ impl ScientificOperations for ExpressionScientificAdapter {
     variables.insert("x".to_string(), angle);
 
     // Evaluate the sin expression with this variable
-    match self.sin_expr.evaluate(&variables) {
-      Ok(result) => result,
-      Err(_) => 0.0, // In a real implementation, we'd handle errors better
-    }
+    self.sin_expr.evaluate(&variables).unwrap_or(0.0)
   }
 
   fn cos(&self, angle: f64) -> f64 {
     let mut variables = HashMap::new();
     variables.insert("x".to_string(), angle);
 
-    match self.cos_expr.evaluate(&variables) {
-      Ok(result) => result,
-      Err(_) => 0.0,
-    }
+    self.cos_expr.evaluate(&variables).unwrap_or(0.0)
   }
 
   fn tan(&self, angle: f64) -> f64 {
     let mut variables = HashMap::new();
     variables.insert("x".to_string(), angle);
 
-    match self.tan_expr.evaluate(&variables) {
-      Ok(result) => result,
-      Err(_) => 0.0,
-    }
+    self.tan_expr.evaluate(&variables).unwrap_or(0.0)
   }
 
   fn log(&self, value: f64, base: f64) -> Result<f64, String> {

@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // expression.rs - Composite pattern for expression trees
 
 use crate::token::{Function, Operator};

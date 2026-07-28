@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // Correct Calculator - Chapter 6
 // Demonstrates structural design patterns
 
