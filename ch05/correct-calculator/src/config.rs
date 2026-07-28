@@ -30,12 +30,16 @@ impl Default for CalculatorConfig {
 }
 
 impl CalculatorConfig {
+  pub fn standard() -> Self {
+    Default::default()
+  }
+
   // Factory methods for common configurations
   pub fn scientific() -> Self {
     Self {
       precision: 15,
-      angle_mode: Default::default(),
       notation: NumberFormat::Scientific,
+      ..Default::default()
     }
   }
 
@@ -57,7 +61,7 @@ static CONFIG: OnceLock<CalculatorConfig> = OnceLock::new();
 pub fn get_global_config() -> &'static CalculatorConfig {
   CONFIG.get_or_init(|| {
     // In a real application, this might load from a file or environment
-    CalculatorConfig::default()
+    Default::default()
   })
 }
 

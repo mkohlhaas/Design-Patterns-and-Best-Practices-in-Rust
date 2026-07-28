@@ -15,6 +15,8 @@ pub struct ExpressionBuilder {
   paren_count: i32, // Track parentheses balance
 }
 
+// Consuming Builder (Owned self) //
+
 impl ExpressionBuilder {
   pub fn new() -> Self {
     Default::default()
@@ -125,6 +127,7 @@ impl ExpressionBuilder {
 
 // Template methods for common expressions
 impl Expression {
+  // 1.0 * x ^ 2.0 + 0.0 * x + 0.0 = x ^ 2.0
   pub fn quadratic() -> ExpressionBuilder {
     ExpressionBuilder::new()
       .number(1.0) // Default a coefficient

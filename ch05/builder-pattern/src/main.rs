@@ -12,6 +12,13 @@ pub struct Server {
   timeout: Option<u32>,
 }
 
+// NOTE: idiomatic Rust: the type you're building provides the entry point to its builder
+impl Server {
+  pub fn builder(host: String, port: u16) -> ServerBuilder {
+    ServerBuilder::new(host, port)
+  }
+}
+
 // The builder struct
 pub struct ServerBuilder {
   host: String,
@@ -69,7 +76,8 @@ fn main() {
   // Elegant, readable fluent interface
 
   {
-    let server = ServerBuilder::new("127.0.0.1".to_string(), 8080)
+    // let server = ServerBuilder::new("127.0.0.1".to_string(), 8080)
+    let server = Server::builder("127.0.0.1".to_string(), 8080)
       .timeout(30)
       .build();
 
@@ -77,7 +85,7 @@ fn main() {
   }
 
   {
-    let server = ServerBuilder::new("127.0.0.1".to_string(), 8080)
+    let server = Server::builder("127.0.0.1".to_string(), 8080)
       .timeout1(30)
       .build1();
 
