@@ -28,13 +28,21 @@ seamlessly implement the pattern using the `#[derive(Clone)]` macro attribute
 
 ### When to Use the Pattern in Rust
 
-- Reusing Expensive Computations: If initializing an object requires
+- Reusing Expensive Computations:
+
+  If initializing an object requires
   downloading data, reading files, or parsing configuration tables, you can
   execute that cost once, store it in a prototype, and clone it later.
-- Polymorphic Cloning (Trait Objects): When you are working with dynamic trait
+
+- Polymorphic Cloning (Trait Objects):
+
+  When you are working with dynamic trait
   objects (&dyn MyTrait or Box<dyn MyTrait>) and need a way to duplicate them at
   runtime without knowing their exact underlying concrete struct.
-- Overcoming Struct Update Limits: If a struct contains non-Copy elements,
+
+- Overcoming Struct Update Limits:
+
+  If a struct contains non-Copy elements,
   Rust's native .. struct update syntax can move ownership rather than copy it.
   Combining a prototype .clone() with field modifications bypasses this
   constraint.
@@ -71,11 +79,17 @@ std::borrow::Cow is an enum with two variants:
 
 ### When to use Cow for Prototypes
 
-- Mass Spawning: You need to create thousands of instances from a baseline
+- Mass Spawning:
+
+  You need to create thousands of instances from a baseline
   prototype, but only 5% of them will ever get customized.
-- String Processing: You are parsing or sanitizing text templates where most
+- String Processing:
+
+  You are parsing or sanitizing text templates where most
   strings remain identical to the original asset, but a few need tokens replaced.
-- OS Interoperability: Handling system paths or arguments using OsStr or
+- OS Interoperability:
+
+  Handling system paths or arguments using OsStr or
   network bytes where copying memory should be deferred.
 
 ### Summary
