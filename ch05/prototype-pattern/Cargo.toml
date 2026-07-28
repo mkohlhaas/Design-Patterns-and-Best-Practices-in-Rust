@@ -1,0 +1,18 @@
+[package]
+name = "prototype-pattern"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[[bin]]
+name = "clone"
+path = "src/clone.rs"
+
+[[bin]]
+name = "template"
+path = "src/template.rs"
+
+[[bin]]
+name = "cow"
+path = "src/cow.rs"
