@@ -20,6 +20,7 @@ pub struct StandardScientificOperations {
   pub angle_mode: AngleMode,
 }
 
+// Rust's trigonometric math functions use radians by default
 impl ScientificOperations for StandardScientificOperations {
   fn sin(&self, angle: f64) -> f64 {
     match self.angle_mode {
@@ -55,9 +56,12 @@ impl ScientificOperations for StandardScientificOperations {
   }
 }
 
-// Adapter for a hypothetical external math library
+// //////////////////////////////////////////////// //
+// Adapter for a hypothetical external math library //
+// //////////////////////////////////////////////// //
+
 pub struct ExternalLibraryAdapter {
-  // In a real implementation, this would contain a reference to the external library
+  // NOTE: In a real implementation, this would contain a reference to the external library
   angle_mode: AngleMode,
 }
 
@@ -66,9 +70,9 @@ impl ExternalLibraryAdapter {
     Self { angle_mode }
   }
 
-  // This would be a helper that converts to the format needed by the external library
+  // NOTE: This would be a helper that converts to the format needed by the external library
   fn convert_angle(&self, angle: f64) -> f64 {
-    // The external library might only work with radians
+    // NOTE: The external library only work with radians
     match self.angle_mode {
       AngleMode::Radians => angle,
       AngleMode::Degrees => angle * PI / 180.0,
@@ -78,9 +82,10 @@ impl ExternalLibraryAdapter {
 
 impl ScientificOperations for ExternalLibraryAdapter {
   fn sin(&self, angle: f64) -> f64 {
+    let converted_angle = self.convert_angle(angle);
+
     // In a real implementation, we would call the external library's function
     // For this example, we'll just use Rust's built-in function
-    let converted_angle = self.convert_angle(angle);
     converted_angle.sin()
   }
 
@@ -108,7 +113,9 @@ impl ScientificOperations for ExternalLibraryAdapter {
   }
 }
 
-// Adapters to connect different expression types
+// ////////////////////////////////////////////// //
+// Adapters to connect different expression types //
+// ////////////////////////////////////////////// //
 
 // Adapter for using ScientificOperations with Expression
 pub struct ScientificFunctionExpression {

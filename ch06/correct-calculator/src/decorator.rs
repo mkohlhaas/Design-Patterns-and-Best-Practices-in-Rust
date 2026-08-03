@@ -13,7 +13,6 @@ pub trait Logger {
 
 // Console logger implementation
 pub struct ConsoleLogger;
-
 impl Logger for ConsoleLogger {
   fn log(&self, message: &str) {
     println!("[LOG] {}", message);
@@ -89,7 +88,8 @@ use std::cell::RefCell;
 pub struct CachingExpression {
   inner: Box<dyn Expression>,
   // Using RefCell for interior mutability
-  last_result: RefCell<Option<f64>>,
+  last_result: RefCell<Option<f64>>, // we need interior mutability bc `evaluate` takes an immutable
+                                     // reference to self (&self; not &mut self)
 }
 
 impl CachingExpression {
@@ -110,13 +110,15 @@ impl Expression for CachingExpression {
     // In a real implementation, we would need to check if variables have changed
     // For this example, we're keeping it simple
     if let Some(result) = *self.last_result.borrow() {
+      println!("Returning cached result");
       return Ok(result);
-    }
+    } // immutable borrow is dropped here
 
     let result = self.inner.evaluate(variables)?;
     // Using interior mutability with RefCell
     *self.last_result.borrow_mut() = Some(result);
 
+    println!("Calculating result");
     Ok(result)
   }
 
@@ -138,6 +140,7 @@ pub struct RangeValidatingExpression {
 
 impl RangeValidatingExpression {
   pub fn new(inner: Box<dyn Expression>, min: f64, max: f64) -> Self {
+    // TODO: it should be checked if max >= min
     Self { inner, min, max }
   }
 }

@@ -17,6 +17,15 @@ pub struct CalculatorFacade {
   config: CalculatorConfig,
 }
 
+// NOTE:
+// "The facade owns its subsystems rather than borrowing them, which simplifies lifetime management.
+// Owned fields eliminate the need for lifetime parameters on the struct, which matters more than
+// you might expect.
+// A struct with lifetime parameters cannot easily be stored in collections, shared across threads,
+// or passed through async boundaries. By owning its data, CalculatorFacade is automatically Send
+// and Sync (assuming its fields are), making it safe to use in multithreaded environments."
+// Own everything, and let the caller decide how to share the facade (e.g. via Arc).
+
 impl CalculatorFacade {
   pub fn new(scientific_ops: Box<dyn ScientificOperations>, config: CalculatorConfig) -> Self {
     Self {
@@ -29,6 +38,7 @@ impl CalculatorFacade {
   }
 
   // Simple interface for evaluating expressions
+  // NOTE: You could make the CalculatorFacade an Expression
   pub fn evaluate(&mut self, expression: &str) -> Result<f64, String> {
     self.history.push(expression.to_string());
 

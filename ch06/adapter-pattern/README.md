@@ -2,8 +2,8 @@
 
 The Adapter design pattern in Rust is a structural pattern that allows two
 incompatible interfaces to collaborate by wrapping an existing type inside a
-new structure. Instead of relying on object inheritance—which Rust does not
-natively support—this pattern uses struct composition and traits to translate
+new structure. Instead of relying on object inheritance - which Rust does not
+natively support - this pattern uses struct composition and traits to translate
 calls from a client-facing interface into a format that a legacy or third-party
 type understands.
 

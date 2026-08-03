@@ -1,14 +1,16 @@
 ### The Bridge Design Pattern
 
-The Bridge design pattern in Rust is a structural design pattern that splits a
-tightly coupled concept into two separate, independent hierarchies: an
-Abstraction (the high-level control layer or user-facing interface) and an
-Implementation (the low-level platform or backend logic). Because Rust lacks
-object-oriented inheritance, the Bridge pattern is elegantly modeled using
-traits to define the abstract behaviors, and composition via struct fields to
-hold references to the interchangeable backends.
+The bridge pattern allows separating an abstraction from its
+implementation so that both can evolve independently.
 
-A bridge is built with a generic struct with a trait bound! (See sample code!)
+The Bridge design pattern in Rust is a structural design pattern that splits a
+tightly coupled concept into two separate, independent hierarchies using traits: 
+- An Abstraction (the high-level control layer or user-facing interface)
+- Implementation (the low-level platform or backend logic)
+
+Because Rust lacks object-oriented inheritance, the Bridge pattern is elegantly
+modeled using traits to define the abstract behaviors, and composition via
+struct fields to hold references to the interchangeable backends.
 
 ### Core Concepts
 

@@ -1,5 +1,8 @@
 ### The Composite Design Pattern
 
+The Composite pattern lets us treat individual objects and compositions of
+objects uniformly through a shared interface.
+
 The Composite design pattern in Rust is a structural design pattern that allows
 you to compose objects into tree structures and work with them uniformly
 through a single interface. Instead of writing custom logic to distinguish
@@ -10,6 +13,25 @@ Trait.
 Because Rust does not support classical object-oriented inheritance, the
 pattern is elegantly implemented using Traits and Trait Objects (Box<dyn
 Trait>) to achieve runtime dynamic dispatch.
+
+### When to use the Composite pattern
+
+The Composite pattern is most valuable when your data naturally forms a tree structure and you
+want to treat individual elements and compositions uniformly. Expression trees, file system
+hierarchies, UI widget trees, and organizational charts are all classic examples.
+
+In Rust, an alternative to the Composite pattern is using enums. An Expr enum with variants for
+Number(f64) , Variable(String) , BinaryOp { left: Box < Expr > , ... } , and FunctionCall
+{ ... } achieves a similar structure without trait objects. The enum approach is better when you
+know all expression types at compile time and want exhaustive pattern matching. The trait object
+approach is better when you need extensibility: new expression types can be added by
+implementing the Expression trait without modifying existing code.
+
+the calculator example uses the trait object approach because it enables the Decorator pattern. If
+Expression were an enum, we couldn't wrap arbitrary expressions in LoggingExpression or
+CachingExpression without adding decorator variants to the enum itself. This is a concrete
+example of the open/closed principle: the trait object approach is open to extension (new expression
+types and new decorators) without requiring modification of existing code.
 
 ### Core Architecture Components
 

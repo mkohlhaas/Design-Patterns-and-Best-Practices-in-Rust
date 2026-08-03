@@ -1,17 +1,18 @@
-// see first src/static_bridge.rs
+// ===================================== //
+// 1. THE LOW-LEVEL IMPLEMENTATION TRAIT //
+// ===================================== //
 
-// 1. The Implementation Trait (unchanged, but must be object-safe)
-trait Device {
+pub trait Device {
   fn is_enabled(&self) -> bool;
   fn enable(&mut self);
   fn disable(&mut self);
-  fn set_volume(&mut self, volume: u8);
-  fn status(&self);
 }
 
-struct Tv {
+// Concrete Implementations (structs)
+
+// Concrete Implementation A
+pub struct Tv {
   on: bool,
-  volume: u8,
 }
 impl Device for Tv {
   fn is_enabled(&self) -> bool {
@@ -23,21 +24,11 @@ impl Device for Tv {
   fn disable(&mut self) {
     self.on = false;
   }
-  fn set_volume(&mut self, volume: u8) {
-    self.volume = volume;
-  }
-  fn status(&self) {
-    println!(
-      "TV is {}, volume: {}",
-      if self.on { "ON" } else { "OFF" },
-      self.volume
-    );
-  }
 }
 
-struct Radio {
+// Concrete Implementation B
+pub struct Radio {
   on: bool,
-  volume: u8,
 }
 impl Device for Radio {
   fn is_enabled(&self) -> bool {
@@ -49,80 +40,67 @@ impl Device for Radio {
   fn disable(&mut self) {
     self.on = false;
   }
-  fn set_volume(&mut self, volume: u8) {
-    self.volume = volume;
-  }
-  fn status(&self) {
-    println!(
-      "Radio is {}, volume: {}",
-      if self.on { "ON" } else { "OFF" },
-      self.volume
-    );
-  }
 }
 
-// 2. The Abstraction Hierarchy (Now using Dynamic Dispatch)
-struct UniversalRemote {
-  // The "Bridge" is now a heap-allocated trait object.
-  // No more `<D: Device>` generic parameters on the struct!
+// =================================== //
+// 2. THE HIGH-LEVEL ABSTRACTION TRAIT //
+// =================================== //
+
+pub trait Remote {
+  fn toggle_power(&mut self);
+  fn change_device(&mut self, new_device: Box<dyn Device>);
+}
+
+// =============================== //
+// 3. The (Dynamic) Bridge (struct)//
+// =============================== //
+
+pub struct BasicRemote {
+  // The Bridge: Holds a trait object to decouple from concrete hardware types
   device: Box<dyn Device>,
 }
 
-impl UniversalRemote {
-  fn new(device: Box<dyn Device>) -> Self {
+impl BasicRemote {
+  pub fn new(device: Box<dyn Device>) -> Self {
     Self { device }
   }
+}
 
+// ========================================================= //
+// 4. Implement High-level Abstraction for the Bridge Struct //
+// ========================================================= //
+
+impl Remote for BasicRemote {
   fn toggle_power(&mut self) {
     if self.device.is_enabled() {
       self.device.disable();
+      println!("Device turned OFF");
     } else {
       self.device.enable();
+      println!("Device turned ON");
     }
   }
 
-  fn mute(&mut self) {
-    self.device.set_volume(0);
-  }
-
-  fn print_status(&self) {
-    self.device.status();
-  }
-
-  // NEW RUNTIME CAPABILITY: Swap the backend device instantly
-  // Sets new device and returns old device.
-  fn change_device(&mut self, new_device: Box<dyn Device>) -> Box<dyn Device> {
-    std::mem::replace(&mut self.device, new_device)
+  fn change_device(&mut self, new_device: Box<dyn Device>) {
+    self.device = new_device;
+    println!("Swapped to a new device on the bridge.");
   }
 }
 
 fn main() {
-  // 1. Initialize the remote with a TV
-  let tv = Box::new(Tv {
-    on: false,
-    volume: 30,
-  });
-  let mut remote = UniversalRemote::new(tv);
+  // 1. Create low-level the hardware implementations
+  let radio = Box::new(Radio { on: false });
+  let tv = Box::new(Tv { on: false });
 
-  println!("--- Controlling TV ---");
-  remote.print_status();
-  remote.toggle_power();
-  remote.print_status();
-  remote.mute();
-  remote.print_status();
+  // 2. Instantiate the High-level abstraction trait object with the radio
+  let mut remote: Box<dyn Remote> = Box::new(BasicRemote::new(radio));
 
-  // 2. Swap the TV for a Radio at runtime using the same remote instance
-  let radio = Box::new(Radio {
-    on: false,
-    volume: 30,
-  });
+  // 3. Control the radio through the bridge abstraction
+  remote.toggle_power(); // turns radio on 
 
-  let _old_tv = remote.change_device(radio); // The TV is returned here
+  // 4. Hot-swap the implementation under the hood at runtime
+  remote.change_device(tv);
 
-  println!("\n--- Controlling Radio (Same Remote) ---");
-  remote.print_status();
-  remote.toggle_power();
-  remote.print_status();
-  remote.mute();
-  remote.print_status();
+  // 5. Control the TV using the exact same remote interface
+  remote.toggle_power(); // turns tv on 
 }

@@ -2,12 +2,20 @@
 
 // expression.rs - Composite pattern for expression trees
 
+// The Composite pattern defines a tree where every node, whether leaf or branch, implements the same Expression trait.
+
+// In this example we have:
+// 1. Two leaf nodes (NumberExpression, VariableExpression)
+// 2. Two composite nodes (BinaryOperation, FunctionCall)
+
 use crate::token::{Function, Operator};
 use std::collections::HashMap;
 
 // Expression trait defining common behavior
+// NOTE: `to_string` should be the Display trait!
 pub trait Expression {
   fn evaluate(&self, variables: &HashMap<String, f64>) -> Result<f64, String>;
+
   fn to_string(&self) -> String;
 
   // For debugging and visualization
@@ -64,8 +72,10 @@ impl Expression for VariableExpression {
 }
 
 // Composite node for binary operations
-// We can't derive Debug and Clone because dyn Expression doesn't implement those traits
+// We can't derive Debug and Clone because dyn Expression doesn't implement those traits. NOTE: But maybe should!
 pub struct BinaryOperation {
+  // NOTE: trait objects provide the dynamic dispatch needed for recursive, heterogeneous tree structures
+  // Recursive structures in Rust require heap allocation.
   pub left: Box<dyn Expression>,
   pub right: Box<dyn Expression>,
   pub operator: Operator,
@@ -81,6 +91,7 @@ impl BinaryOperation {
   }
 }
 
+// composite node
 impl Expression for BinaryOperation {
   fn evaluate(&self, variables: &HashMap<String, f64>) -> Result<f64, String> {
     let left_val = self.left.evaluate(variables)?;
@@ -90,14 +101,9 @@ impl Expression for BinaryOperation {
       Operator::Add => Ok(left_val + right_val),
       Operator::Subtract => Ok(left_val - right_val),
       Operator::Multiply => Ok(left_val * right_val),
-      Operator::Divide => {
-        if right_val == 0.0 {
-          Err("Division by zero".to_string())
-        } else {
-          Ok(left_val / right_val)
-        }
-      }
       Operator::Power => Ok(left_val.powf(right_val)),
+      Operator::Divide if right_val == 0.0 => Err("Division by zero".to_string()),
+      Operator::Divide => Ok(left_val / right_val),
     }
   }
 

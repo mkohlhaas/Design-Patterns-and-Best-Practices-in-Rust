@@ -60,6 +60,8 @@ pub fn get_global_config() -> &'static CalculatorConfig {
   })
 }
 
+// Flyweight Pattern
+
 // Thread-safe calculator with shared config
 use std::sync::{Arc, Mutex};
 

@@ -1,24 +1,17 @@
-// Remotes and Devices
-//
-// Imagine a scenario where you have multiple types of remote controls (Basic, Advanced) and
-// multiple types of devices (TV, Radio). Instead of creating a matrix of classes like TvBasicRemote
-// and RadioAdvancedRemote, the Bridge pattern keeps them separate.
+// ===================================== //
+// 1. THE LOW-LEVEL IMPLEMENTATION TRAIT //
+// ===================================== //
 
-// 1. The Implementation Trait (Low-level interface)
-trait Device {
+pub trait Device {
   fn is_enabled(&self) -> bool;
   fn enable(&mut self);
   fn disable(&mut self);
-  fn set_volume(&mut self, volume: u8);
-  fn status(&self); // Added for easy demonstration
 }
 
-// Concrete Implementation A: TV
-struct Tv {
+// Concrete Implementation A
+pub struct Tv {
   on: bool,
-  volume: u8,
 }
-
 impl Device for Tv {
   fn is_enabled(&self) -> bool {
     self.on
@@ -29,24 +22,12 @@ impl Device for Tv {
   fn disable(&mut self) {
     self.on = false;
   }
-  fn set_volume(&mut self, volume: u8) {
-    self.volume = volume;
-  }
-  fn status(&self) {
-    println!(
-      "TV is {}, volume: {}",
-      if self.on { "ON" } else { "OFF" },
-      self.volume
-    );
-  }
 }
 
-// Concrete Implementation B: Radio (NEW)
-struct Radio {
+// Concrete Implementation B
+pub struct Radio {
   on: bool,
-  volume: u8,
 }
-
 impl Device for Radio {
   fn is_enabled(&self) -> bool {
     self.on
@@ -57,95 +38,68 @@ impl Device for Radio {
   fn disable(&mut self) {
     self.on = false;
   }
-  fn set_volume(&mut self, volume: u8) {
-    self.volume = volume;
-  }
-  fn status(&self) {
-    println!(
-      "Radio is {}, volume: {}",
-      if self.on { "ON" } else { "OFF" },
-      self.volume
-    );
-  }
 }
 
-// 2. The Abstraction Hierarchy (High-level interface using composition)
-// NOTE: `Device` is a trait!
-// A bridge is built with a generic struct with a trait bound!
-struct RemoteControl<D: Device> {
-  // It bridges two independent hierarchies: On one side, you have the Abstraction (the
-  // RemoteControl layer, which defines how users interact with things). On the other side, you have
-  // the Implementation (the Device trait, which defines how hardware executes commands like Tv or
-  // Radio)
-  device: D, // NOTE: This is the "Bridge"!
+// =================================== //
+// 2. THE HIGH-LEVEL ABSTRACTION TRAIT //
+// =================================== //
+
+pub trait Remote {
+  fn toggle_power(&mut self);
 }
 
-impl<D: Device> RemoteControl<D> {
-  fn new(device: D) -> Self {
+// =============================== //
+// 3. The (Static) Bridge (struct) //
+// =============================== //
+
+// The Bridge: Evaluated at compile time via standard Rust generics
+pub struct BasicRemote<D: Device> {
+  device: D,
+}
+
+impl<D: Device> BasicRemote<D> {
+  pub fn new(device: D) -> Self {
     Self { device }
   }
 
+  // Static types cannot mutate into different types in place.
+  // To switch devices, we consume the remote and return a new typed instance.
+  pub fn change_device<ND: Device>(self, new_device: ND) -> BasicRemote<ND> {
+    println!("Statically swapped to a new device type.");
+    BasicRemote::new(new_device)
+  }
+}
+
+// ========================================================= //
+// 4. Implement High-level Abstraction for the Bridge Struct //
+// ========================================================= //
+
+impl<D: Device> Remote for BasicRemote<D> {
   fn toggle_power(&mut self) {
     if self.device.is_enabled() {
       self.device.disable();
+      println!("Device turned OFF");
     } else {
       self.device.enable();
+      println!("Device turned ON");
     }
   }
 }
 
-// An Extended Abstraction that inherits functionality through the bridge
-struct AdvancedRemoteControl<D: Device> {
-  remote: RemoteControl<D>,
-}
-
-impl<D: Device> AdvancedRemoteControl<D> {
-  fn new(device: D) -> Self {
-    Self {
-      remote: RemoteControl::new(device),
-    }
-  }
-
-  fn mute(&mut self) {
-    self.remote.device.set_volume(0);
-  }
-
-  fn print_status(&self) {
-    self.remote.device.status();
-  }
-}
-
+// =======================================================
+// 3. USAGE
+// =======================================================
 fn main() {
-  {
-    // ---- TV Setup ----
-    let tv = Tv {
-      on: false,
-      volume: 30,
-    };
-    let mut tv_remote = AdvancedRemoteControl::new(tv);
+  // 1. Create the hardware implementations (allocated entirely on the stack)
+  let radio = Radio { on: false };
+  let tv = Tv { on: false };
 
-    println!("--- Testing TV ---");
-    tv_remote.print_status();
-    tv_remote.remote.toggle_power();
-    tv_remote.print_status();
-    tv_remote.mute();
-    tv_remote.print_status();
-  }
+  // 2. Instantiate the abstraction. Type infers as BasicRemote<Radio>
+  let mut remote = BasicRemote::new(radio);
+  remote.toggle_power(); // turn radio on
 
-  {
-    // ---- Radio Setup ----
-    let radio = Radio {
-      on: false,
-      volume: 30,
-    };
-    // The exact same remote logic works seamlessly with the Radio
-    let mut radio_remote = AdvancedRemoteControl::new(radio);
-
-    println!("\n--- Testing Radio ---");
-    radio_remote.print_status();
-    radio_remote.remote.toggle_power();
-    radio_remote.print_status();
-    radio_remote.mute();
-    radio_remote.print_status();
-  }
+  // 3. Swap the backend implementation.
+  // Ownership transfer creates a brand new BasicRemote<Tv> type structure.
+  let mut remote = remote.change_device(tv);
+  remote.toggle_power(); // turn tv on
 }

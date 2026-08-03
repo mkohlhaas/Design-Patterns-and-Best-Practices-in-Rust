@@ -8,8 +8,10 @@ of similar objects instead of duplicating it in each individual instance.
 
 The pattern splits object data into two parts:
 
-* *Intrinsic State*: Constant, heavy data shared across many objects (e.g., textures, fonts, or product templates).
-* *Extrinsic State*: Contextual, unique data stored outside the shared instance (e.g., coordinates, unique IDs, or quantities).
+* *Intrinsic State (shared)*: Constant, heavy data shared across many objects (e.g., textures, fonts, or product templates).
+  You can use Rust constructs with shared ownership, e.g. &, Rc, Arc, Cow, 'static, …
+* *Extrinsic State (unique)*: Contextual, unique data stored outside the shared instance (e.g., coordinates, unique IDs, or quantities).
+  You can use a Hashmap as a flyweight factory.
 
 ### When to Use It in Rust
 
