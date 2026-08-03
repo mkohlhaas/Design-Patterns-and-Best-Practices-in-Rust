@@ -1,8 +1,14 @@
-### The Strategy Pattern
+### The Strategy Pattern: Swappable Algorithms
+
+Think of `algorithms` simply as Rust functions.
+
+The Strategy pattern allows us to define a family of algorithms, encapsulate each one as a separate
+type, and make them interchangeable. This pattern enables the algorithm to vary independently
+from the clients that use it, providing a flexible alternative to subclassing for extending behavior.
 
 The Strategy pattern in Rust is a behavioral design pattern that allows you to
 define a family of interchangeable algorithms, put each one into a separate
-type, and make them interchangeable
+type, and make them interchangeable.
 
 ## Comparison of Rust Strategy Formats
 

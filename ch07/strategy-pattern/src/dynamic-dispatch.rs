@@ -10,7 +10,9 @@ trait PaymentStrategy {
 // 2. Implement Concrete Strategies //
 // ================================ //
 
-// A. CreditCard
+// ============= //
+// A. CreditCard //
+// ============= //
 
 struct CreditCard {
   card_number: String,
@@ -22,7 +24,9 @@ impl PaymentStrategy for CreditCard {
   }
 }
 
-// B. PayPal
+// ========= //
+// B. PayPal //
+// ========= //
 
 struct PayPal {
   email: String,
@@ -39,8 +43,7 @@ impl PaymentStrategy for PayPal {
 // ========================================= //
 
 struct DynamicCheckout {
-  // Box allows holding any type implementing the trait
-  strategy: Box<dyn PaymentStrategy>, // similar to the bridge pattern
+  strategy: Box<dyn PaymentStrategy>,
 }
 
 impl DynamicCheckout {
@@ -52,11 +55,15 @@ impl DynamicCheckout {
     self.strategy.pay(amount);
   }
 
-  // Allows swapping the strategy at runtime
+  // swaps the strategy at runtime
   fn change_strategy(&mut self, new_strategy: Box<dyn PaymentStrategy>) {
     self.strategy = new_strategy;
   }
 }
+
+// ===== //
+// Usage //
+// ===== //
 
 fn main() {
   // Initialize with Credit Card
@@ -69,5 +76,6 @@ fn main() {
   checkout.change_strategy(Box::new(PayPal {
     email: String::from("switch@example.com"),
   }));
+
   checkout.complete_purchase(75);
 }

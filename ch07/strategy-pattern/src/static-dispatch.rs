@@ -10,7 +10,9 @@ trait PaymentStrategy {
 // 2. Implement Concrete Strategies //
 // ================================ //
 
-// A. CreditCard
+// ============= //
+// A. CreditCard //
+// ============= //
 
 struct CreditCard {
   card_number: String,
@@ -22,7 +24,9 @@ impl PaymentStrategy for CreditCard {
   }
 }
 
-// B. PayPal
+// ========= //
+// B. PayPal //
+// ========= //
 
 struct PayPal {
   email: String,
@@ -51,6 +55,10 @@ impl<T: PaymentStrategy> CheckoutContext<T> {
     self.strategy.pay(amount);
   }
 }
+
+// ===== //
+// Usage //
+// ===== //
 
 fn main() {
   {

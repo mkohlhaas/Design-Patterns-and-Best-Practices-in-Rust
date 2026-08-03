@@ -1,95 +1,70 @@
 // strategy.rs - Strategy pattern implementation
 
+// We are using the static strategy pattern
+
+// 1. Define the Strategy Interfaces
+//   - A. Strategy for expression evaluation
+//   - B. Strategy for tokenization
+//   - C. Strategy for numeric precision
+
+// 2. Implement Concrete Strategies
+//   - A. Implementations for EvaluationStrategy
+//     - I. Recursive Descent Evaluation
+//     - II. Shunting Yard Evaluation
+//   - B. Implementations for TokenizationStrategy
+//     - I. Simple Tokenization
+//   - C. Implementations for PrecisionStrategy
+//     - I. Standard precision
+//     - II. Scientific Precision
+
+// 3. Define the Context using Generics
+
 use crate::expression::{
   BinaryOperation, Expression, FunctionCall, NumberExpression, VariableExpression,
 };
 use crate::token::{Function, Operator, Token};
 use std::collections::HashMap;
 
-// Strategy interface for expression evaluation
+// ///////////////////////////////// //
+// 1. Define the Strategy Interfaces //
+// ///////////////////////////////// //
+
+// ======================================//
+// A. Strategy for expression evaluation //
+// ======================================//
+
 pub trait EvaluationStrategy {
   fn evaluate(&self, expression: &str, variables: &HashMap<String, f64>) -> Result<f64, String>;
 }
 
-// Strategy for tokenization
+// ============================ //
+// B. Strategy for tokenization //
+// ============================ //
+
 pub trait TokenizationStrategy {
   fn tokenize(&self, input: &str) -> Result<Vec<Token>, String>;
 }
 
-// Strategy for numeric precision
+// ================================= //
+// C. Strategy for numeric precision //
+// ================================= //
+
 pub trait PrecisionStrategy {
   fn format(&self, value: f64) -> String;
   fn round(&self, value: f64) -> f64;
 }
 
-// Standard precision implementation
-pub struct StandardPrecision {
-  decimal_places: usize,
-}
+// //////////////////////////////// //
+// 2. Implement Concrete Strategies //
+// //////////////////////////////// //
 
-impl StandardPrecision {
-  pub fn new(decimal_places: usize) -> Self {
-    Self { decimal_places }
-  }
-}
+// ========================================= //
+// A. Implementations for EvaluationStrategy //
+// ========================================= //
 
-impl PrecisionStrategy for StandardPrecision {
-  fn format(&self, value: f64) -> String {
-    format!("{:.*}", self.decimal_places, value)
-  }
-
-  fn round(&self, value: f64) -> f64 {
-    let factor = 10.0f64.powi(self.decimal_places as i32);
-    (value * factor).round() / factor
-  }
-}
-
-// Scientific precision implementation
-pub struct ScientificPrecision {
-  significant_figures: usize,
-}
-
-impl ScientificPrecision {
-  pub fn new(significant_figures: usize) -> Self {
-    Self {
-      significant_figures,
-    }
-  }
-}
-
-impl PrecisionStrategy for ScientificPrecision {
-  fn format(&self, value: f64) -> String {
-    // Format with significant figures
-    format!("{:.*e}", self.significant_figures - 1, value)
-  }
-
-  fn round(&self, value: f64) -> f64 {
-    // Implementation for significant figure rounding
-    if value == 0.0 {
-      return 0.0;
-    }
-
-    let sign = value.signum();
-    let abs_value = value.abs();
-    let magnitude = abs_value.log10().floor();
-    let scale = 10.0f64.powf(magnitude - (self.significant_figures as f64 - 1.0));
-
-    sign * ((abs_value / scale).round() * scale)
-  }
-}
-
-// Standard tokenization strategy
-pub struct SimpleTokenizer;
-
-impl TokenizationStrategy for SimpleTokenizer {
-  fn tokenize(&self, input: &str) -> Result<Vec<Token>, String> {
-    // Simple space-delimited tokenization
-    let tokens: Result<Vec<Token>, String> =
-      input.split_whitespace().map(Token::from_str).collect();
-
-    tokens
-  }
-}
+// ================================ //
+// I. Recursive Descent Evaluation //
+// ================================ //
 
 // Recursive descent parser strategy
 pub struct RecursiveDescentStrategy {
@@ -202,6 +177,10 @@ impl EvaluationStrategy for RecursiveDescentStrategy {
     expr.evaluate(variables)
   }
 }
+
+// ============================ //
+// II. Shunting Yard Evaluation //
+// ============================ //
 
 // Shunting yard algorithm strategy
 pub struct ShuntingYardStrategy {
@@ -346,13 +325,103 @@ impl EvaluationStrategy for ShuntingYardStrategy {
   }
 }
 
+// =========================================== //
+// B. Implementations for TokenizationStrategy //
+// =========================================== //
+
+// ====================== //
+// I. Simple Tokenization //
+// ====================== //
+
+pub struct SimpleTokenizer;
+
+impl TokenizationStrategy for SimpleTokenizer {
+  fn tokenize(&self, input: &str) -> Result<Vec<Token>, String> {
+    // Simple space-delimited tokenization
+    let tokens: Result<Vec<Token>, String> =
+      input.split_whitespace().map(Token::from_str).collect();
+
+    tokens
+  }
+}
+
+// ======================================== //
+// C. Implementations for PrecisionStrategy //
+// ======================================== //
+
+// ===================== //
+// I. Standard precision //
+// ===================== //
+
+pub struct StandardPrecision {
+  decimal_places: usize,
+}
+
+impl StandardPrecision {
+  pub fn new(decimal_places: usize) -> Self {
+    Self { decimal_places }
+  }
+}
+
+impl PrecisionStrategy for StandardPrecision {
+  fn format(&self, value: f64) -> String {
+    format!("{:.*}", self.decimal_places, value)
+  }
+
+  fn round(&self, value: f64) -> f64 {
+    let factor = 10.0f64.powi(self.decimal_places as i32);
+    (value * factor).round() / factor
+  }
+}
+
+// =========================//
+// II. Scientific Precision //
+// =========================//
+
+pub struct ScientificPrecision {
+  significant_figures: usize,
+}
+
+impl ScientificPrecision {
+  pub fn new(significant_figures: usize) -> Self {
+    Self {
+      significant_figures,
+    }
+  }
+}
+
+impl PrecisionStrategy for ScientificPrecision {
+  fn format(&self, value: f64) -> String {
+    // Format with significant figures
+    format!("{:.*e}", self.significant_figures - 1, value)
+  }
+
+  fn round(&self, value: f64) -> f64 {
+    // Implementation for significant figure rounding
+    if value == 0.0 {
+      return 0.0;
+    }
+
+    let sign = value.signum();
+    let abs_value = value.abs();
+    let magnitude = abs_value.log10().floor();
+    let scale = 10.0f64.powf(magnitude - (self.significant_figures as f64 - 1.0));
+
+    sign * ((abs_value / scale).round() * scale)
+  }
+}
+
+// ==================================== //
+// 3. Define the Context using Generics //
+// ==================================== //
+
 // Context that uses the strategies
-pub struct ExpressionEvaluator {
+pub struct ExpressionEvaluatorContext {
   evaluation_strategy: Box<dyn EvaluationStrategy>,
   precision_strategy: Box<dyn PrecisionStrategy>,
 }
 
-impl ExpressionEvaluator {
+impl ExpressionEvaluatorContext {
   pub fn new(
     evaluation_strategy: Box<dyn EvaluationStrategy>,
     precision_strategy: Box<dyn PrecisionStrategy>,
@@ -385,19 +454,22 @@ impl ExpressionEvaluator {
   }
 }
 
-// Factory functions for creating common strategies
-pub fn create_standard_evaluator() -> ExpressionEvaluator {
+// ================================================ //
+// Factory functions for creating common strategies //
+// ================================================ //
+
+pub fn create_standard_evaluator() -> ExpressionEvaluatorContext {
   let tokenizer = Box::new(SimpleTokenizer);
   let evaluation_strategy = Box::new(ShuntingYardStrategy::new(tokenizer));
   let precision_strategy = Box::new(StandardPrecision::new(10));
 
-  ExpressionEvaluator::new(evaluation_strategy, precision_strategy)
+  ExpressionEvaluatorContext::new(evaluation_strategy, precision_strategy)
 }
 
-pub fn create_scientific_evaluator() -> ExpressionEvaluator {
+pub fn create_scientific_evaluator() -> ExpressionEvaluatorContext {
   let tokenizer = Box::new(SimpleTokenizer);
   let evaluation_strategy = Box::new(ShuntingYardStrategy::new(tokenizer));
   let precision_strategy = Box::new(ScientificPrecision::new(6));
 
-  ExpressionEvaluator::new(evaluation_strategy, precision_strategy)
+  ExpressionEvaluatorContext::new(evaluation_strategy, precision_strategy)
 }
