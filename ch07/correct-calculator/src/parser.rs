@@ -47,7 +47,7 @@ impl ExpressionParser {
         }
         Token::Operator(op) => {
           // While there's an operator on the stack with greater precedence
-          while let Some(&Token::Operator(ref top_op)) = operator_stack.last() {
+          while let Some(Token::Operator(top_op)) = operator_stack.last() {
             // Compare precedence before mutably borrowing
             let higher_precedence = top_op.precedence() >= op.precedence();
 

@@ -1,15 +1,31 @@
-// 1. The Receiver: Holds the application state
+// ============================================ //
+// 1. The Receiver: Holds the application state //
+// ============================================ //
+
+#[derive(Default)]
 pub struct Document {
   pub text: String,
 }
 
-// 2. The Command Trait: Decouples execution logic
+impl Document {
+  pub fn new(text: String) -> Self {
+    Self { text }
+  }
+}
+
+// =============================================== //
+// 2. The Command Trait: Decouples execution logic //
+// =============================================== //
+
 pub trait Command {
   fn execute(&mut self, doc: &mut Document);
   fn undo(&mut self, doc: &mut Document);
 }
 
-// 3. Concrete Command: Adds text to the document
+// ============================================== //
+// 3. Concrete Command: Adds text to the document //
+// ============================================== //
+
 pub struct AddTextCommand {
   text_to_add: String,
 }
@@ -35,51 +51,59 @@ impl Command for AddTextCommand {
   }
 }
 
-// 4. The Invoker: Manages history and schedules execution
-pub struct HistoryInvoker {
+// ================================================================= //
+// 4. The Command Processor: Manages history and schedules execution //
+// ================================================================= //
+
+pub struct CommandProcessor {
+  // not absolutely necessary, but you'd need to provide a Document in the functions, e.g. execute_command, undo_command, …
+  doc: Document,
   history: Vec<Box<dyn Command>>, // Stores trait objects
 }
 
-impl HistoryInvoker {
-  pub fn new() -> Self {
-    Self {
-      history: Vec::new(),
-    }
-  }
-
-  pub fn execute_command(&mut self, mut command: Box<dyn Command>, doc: &mut Document) {
-    command.execute(doc);
-    self.history.push(command);
-  }
-
-  pub fn undo_command(&mut self, doc: &mut Document) {
-    if let Some(mut command) = self.history.pop() {
-      command.undo(doc);
-    }
-  }
-}
-
-impl Default for HistoryInvoker {
+impl Default for CommandProcessor {
   fn default() -> Self {
     Self::new()
   }
 }
 
-// Usage Example
+impl CommandProcessor {
+  pub fn new() -> Self {
+    Self {
+      doc: Default::default(),
+      history: Vec::new(),
+    }
+  }
+
+  pub fn execute_command(&mut self, mut command: Box<dyn Command>) {
+    command.execute(&mut self.doc);
+    self.history.push(command);
+  }
+
+  pub fn undo_command(&mut self) {
+    if let Some(mut command) = self.history.pop() {
+      command.undo(&mut self.doc);
+    }
+  }
+
+  // getters wouldn't be needed when you provide a Document for the functions, e.g.
+  // execute_command, undo_command, ...
+  pub fn get_document(&self) -> &Document {
+    &self.doc
+  }
+
+  pub fn get_document_mut(&mut self) -> &mut Document {
+    &mut self.doc
+  }
+}
+
 fn main() {
-  // the receiver
-  let mut doc = Document {
-    text: String::new(),
-  };
+  let mut processor = CommandProcessor::new(); // a Document is automatically created
 
-  // the invoker
-  let mut invoker = HistoryInvoker::new();
+  processor.execute_command(Box::new(AddTextCommand::new("Hello ")));
+  processor.execute_command(Box::new(AddTextCommand::new("World!")));
+  println!("Current: {}", processor.get_document().text); // Prints: Hello World!
 
-  // invoker executes commands on the receiver
-  invoker.execute_command(Box::new(AddTextCommand::new("Hello ")), &mut doc);
-  invoker.execute_command(Box::new(AddTextCommand::new("World!")), &mut doc);
-  println!("Current: {}", doc.text); // Prints: Hello World!
-
-  invoker.undo_command(&mut doc);
-  println!("After Undo: {}", doc.text); // Prints: Hello 
+  processor.undo_command();
+  println!("Undo: {}", processor.get_document().text); // Prints: Hello 
 }

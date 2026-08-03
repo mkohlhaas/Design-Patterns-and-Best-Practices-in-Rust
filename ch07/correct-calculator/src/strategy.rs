@@ -118,11 +118,11 @@ impl RecursiveDescentStrategy {
     // For simplicity, we're not handling the token indices correctly here
     // A real implementation would keep track of the current token index
     for i in 0..tokens.len() {
-      if let Token::Operator(op @ (Operator::Add | Operator::Subtract)) = &tokens[i] {
-        if i + 1 < tokens.len() {
-          let right = self.parse_multiplication(&tokens[i + 1..])?;
-          left = Box::new(BinaryOperation::new(left, right, op.clone()));
-        }
+      if let Token::Operator(op @ (Operator::Add | Operator::Subtract)) = &tokens[i]
+        && i + 1 < tokens.len()
+      {
+        let right = self.parse_multiplication(&tokens[i + 1..])?;
+        left = Box::new(BinaryOperation::new(left, right, op.clone()));
       }
     }
 
@@ -136,11 +136,10 @@ impl RecursiveDescentStrategy {
     for i in 0..tokens.len() {
       if let Token::Operator(op @ (Operator::Multiply | Operator::Divide | Operator::Power)) =
         &tokens[i]
+        && i + 1 < tokens.len()
       {
-        if i + 1 < tokens.len() {
-          let right = self.parse_primary(&tokens[i + 1..])?;
-          left = Box::new(BinaryOperation::new(left, right, op.clone()));
-        }
+        let right = self.parse_primary(&tokens[i + 1..])?;
+        left = Box::new(BinaryOperation::new(left, right, op.clone()));
       }
     }
 
@@ -229,7 +228,7 @@ impl ShuntingYardStrategy {
         }
         Token::Operator(op) => {
           // While there's an operator on the stack with greater precedence
-          while let Some(&Token::Operator(ref top_op)) = operator_stack.last() {
+          while let Some(Token::Operator(top_op)) = operator_stack.last() {
             // Compare precedence before mutably borrowing
             let higher_precedence = top_op.precedence() >= op.precedence();
 

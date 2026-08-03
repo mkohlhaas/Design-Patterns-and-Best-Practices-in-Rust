@@ -1,6 +1,8 @@
 // main.rs - Main entry point for the calculator
 // Combines structural patterns from Chapter 6 and behavioral patterns from Chapter 7
 
+#![allow(unused)]
+
 // Chapter 6 modules (structural patterns)
 mod config;
 mod expression;
@@ -184,7 +186,7 @@ mod adapter {
   }
 }
 
-use chain::{create_input_chain, InputHandler};
+use chain::{InputHandler, create_input_chain};
 use command::CommandProcessor;
 use mediator::CalculatorMediator;
 use parser::ExpressionParser;
@@ -318,9 +320,9 @@ fn _run_with_mediator() {
     let result = {
       let mut mediator = mediator.lock().unwrap();
 
-      if input.starts_with("/") {
+      if let Some(cmd) = input.strip_prefix("/") {
         // Special commands
-        match &input[1..] {
+        match cmd {
           "help" => {
             println!("Commands: /help, /exit");
             Ok(None)

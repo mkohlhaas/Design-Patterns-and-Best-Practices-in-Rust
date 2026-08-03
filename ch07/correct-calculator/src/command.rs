@@ -1,35 +1,23 @@
 // command.rs - Command pattern implementation
 
 use crate::expression::Expression;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::SystemTime};
 
-// Command interface
-pub trait Command {
-  fn execute(&mut self, calculator: &mut Calculator) -> Result<Option<f64>, String>;
-  fn undo(&self, calculator: &mut Calculator) -> Result<(), String>;
-  fn description(&self) -> String;
-}
+// ============================================ //
+// 1. The Receiver: Holds the application state //
+// ============================================ //
 
-// Calculator struct for command context
 pub struct Calculator {
   pub variables: HashMap<String, f64>,
-  pub history: Vec<Calculation>,
+  pub calc_history: Vec<Calculation>,
   pub last_result: Option<f64>,
-}
-
-// Represents a complete calculation
-#[derive(Debug, Clone)]
-pub struct Calculation {
-  pub expression: String,
-  pub result: f64,
-  pub timestamp: std::time::SystemTime,
 }
 
 impl Calculator {
   pub fn new() -> Self {
     Self {
       variables: HashMap::new(),
-      history: Vec::new(),
+      calc_history: Vec::new(),
       last_result: None,
     }
   }
@@ -54,14 +42,39 @@ impl Calculator {
     let calculation = Calculation {
       expression,
       result,
-      timestamp: std::time::SystemTime::now(),
+      timestamp: SystemTime::now(),
     };
-    self.history.push(calculation);
+    self.calc_history.push(calculation);
     self.last_result = Some(result);
   }
 }
 
-// Concrete command for evaluating expressions
+// Helper struct: Represents a complete calculation
+#[derive(Debug, Clone)]
+pub struct Calculation {
+  pub expression: String,
+  pub result: f64,
+  pub timestamp: SystemTime,
+}
+
+// =============================================== //
+// 2. The Command Trait: Decouples execution logic //
+// =============================================== //
+
+pub trait Command {
+  fn execute(&mut self, calculator: &mut Calculator) -> Result<Option<f64>, String>;
+  fn undo(&self, calculator: &mut Calculator) -> Result<(), String>;
+  fn description(&self) -> String;
+}
+
+// ==================== //
+// 3. Concrete commands //
+// ==================== //
+
+// ======================== //
+// A. Evaluates expressions //
+// ======================== //
+
 pub struct EvaluateCommand {
   expression: String,
   expr_tree: Box<dyn Expression>,
@@ -90,8 +103,8 @@ impl Command for EvaluateCommand {
 
   fn undo(&self, calculator: &mut Calculator) -> Result<(), String> {
     // Remove the last entry from history
-    if !calculator.history.is_empty() {
-      calculator.history.pop();
+    if !calculator.calc_history.is_empty() {
+      calculator.calc_history.pop();
     }
 
     // Restore previous result
@@ -105,7 +118,10 @@ impl Command for EvaluateCommand {
   }
 }
 
-// Command for setting variables
+// ================= //
+// B. Sets variables //
+// ================= //
+
 pub struct SetVariableCommand {
   name: String,
   value: f64,
@@ -147,7 +163,10 @@ impl Command for SetVariableCommand {
   }
 }
 
-// Clear all variables command
+// ======================= //
+// C. Clears all variables //
+// ======================= //
+
 pub struct ClearVariablesCommand {
   previous_variables: Option<HashMap<String, f64>>,
 }
@@ -181,10 +200,13 @@ impl Command for ClearVariablesCommand {
   }
 }
 
-// Command processor that handles and tracks commands
+// ================================================================= //
+// 4. The Command Processor: Manages history and schedules execution //
+// ================================================================= //
+
 pub struct CommandProcessor {
   calculator: Calculator,
-  history: Vec<Box<dyn Command>>,
+  cmd_history: Vec<Box<dyn Command>>,
   undo_stack: Vec<Box<dyn Command>>,
 }
 
@@ -192,20 +214,20 @@ impl CommandProcessor {
   pub fn new() -> Self {
     Self {
       calculator: Calculator::new(),
-      history: Vec::new(),
+      cmd_history: Vec::new(),
       undo_stack: Vec::new(),
     }
   }
 
   pub fn execute(&mut self, mut command: Box<dyn Command>) -> Result<Option<f64>, String> {
     let result = command.execute(&mut self.calculator)?;
-    self.history.push(command);
+    self.cmd_history.push(command);
     self.undo_stack.clear(); // Clear redo stack after new command
     Ok(result)
   }
 
   pub fn undo(&mut self) -> Result<(), String> {
-    if let Some(command) = self.history.pop() {
+    if let Some(command) = self.cmd_history.pop() {
       command.undo(&mut self.calculator)?;
       self.undo_stack.push(command);
       Ok(())
@@ -217,7 +239,7 @@ impl CommandProcessor {
   pub fn redo(&mut self) -> Result<(), String> {
     if let Some(mut command) = self.undo_stack.pop() {
       command.execute(&mut self.calculator)?;
-      self.history.push(command);
+      self.cmd_history.push(command);
       Ok(())
     } else {
       Err("Nothing to redo".to_string())
@@ -225,7 +247,11 @@ impl CommandProcessor {
   }
 
   pub fn history(&self) -> Vec<String> {
-    self.history.iter().map(|cmd| cmd.description()).collect()
+    self
+      .cmd_history
+      .iter()
+      .map(|cmd| cmd.description())
+      .collect()
   }
 
   pub fn get_calculator(&self) -> &Calculator {

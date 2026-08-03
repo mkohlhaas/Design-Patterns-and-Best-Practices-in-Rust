@@ -52,8 +52,9 @@ impl CommandHandler {
 impl InputHandler for CommandHandler {
   fn handle(&self, input: &str, processor: &mut CommandProcessor) -> Result<Option<f64>, String> {
     let trimmed = input.trim();
-    if trimmed.starts_with("/") {
-      match &trimmed[1..] {
+
+    if let Some(cmd) = trimmed.strip_prefix("/") {
+      match cmd {
         "undo" => {
           processor.undo()?;
           Ok(None)
