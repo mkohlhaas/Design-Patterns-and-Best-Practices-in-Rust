@@ -1,17 +1,51 @@
 // chain.rs - Chain of Responsibility pattern implementation
 
+// The Chain of Responsibility pattern creates a pipeline of specialized handlers.
+// We'll first define a common interface that allows handlers to either process input or decline it.
+// Then we'll implement concrete handlers for commands, variables, and expressions, and build a
+// chain that tries each handler in order. This approach makes our input processing both extensible
+// and maintainable. New input types simply require new handlers added to the chain.
+
 use crate::command::{
   ClearVariablesCommand, Command, CommandProcessor, EvaluateCommand, SetVariableCommand,
 };
 use crate::parser::ExpressionParser;
 
-// Handler interface
+// A handler returns:
+// - Ok(Some(<value>)) when it handled the request without error and returned a value
+// - Ok(None)          when it handled the request without error and did't return a value
+// - Err()             when it handled the request but there was an error
+type HandleResult = Result<Option<f64>, String>;
+
+// ======================//
+// 1. Define the Request //
+// ======================//
+
+// In our case the request is:
+// a. an input String
+// b. a Command Processor
+
+// ============================================================ //
+// 2. Define the Handler trait with dynamic dispatch capability //
+// ============================================================ //
+
 pub trait InputHandler {
-  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> Result<Option<f64>, String>;
+  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> HandleResult;
   fn set_next(&mut self, next: Box<dyn InputHandler>);
 }
 
-// Base implementation for chaining
+// =========================== //
+// 3. Create Concrete Handlers //
+// =========================== //
+
+// Every handler has a `BaseHandler` with a `next` field.
+// The handlers itself don't have their `next` fields.
+// Just a design decision, I guess.
+
+// =============== //
+// A. Base Handler //
+// =============== //
+
 pub struct BaseHandler {
   next: Option<Box<dyn InputHandler>>,
 }
@@ -22,8 +56,9 @@ impl BaseHandler {
   }
 }
 
+// let's `next` handle the request
 impl InputHandler for BaseHandler {
-  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> Result<Option<f64>, String> {
+  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> HandleResult {
     if let Some(next) = &self.next {
       next.handle(input, processor)
     } else {
@@ -35,6 +70,10 @@ impl InputHandler for BaseHandler {
     self.next = Some(next);
   }
 }
+
+// ================== //
+// B. Command Handler //
+// ================== //
 
 // Handles special commands like undo, redo, history
 pub struct CommandHandler {
@@ -50,10 +89,11 @@ impl CommandHandler {
 }
 
 impl InputHandler for CommandHandler {
-  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> Result<Option<f64>, String> {
+  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> HandleResult {
     let trimmed = input.trim();
 
     if let Some(cmd) = trimmed.strip_prefix("/") {
+      // TODO: cmds should be enums
       match cmd {
         "undo" => {
           processor.undo()?;
@@ -95,7 +135,11 @@ impl InputHandler for CommandHandler {
   }
 }
 
-// Handles variable assignments (x=5)
+// =================== //
+// C. Variable Handler //
+// =================== //
+
+// Handles variable assignments (e.g. x = 5)
 pub struct VariableAssignmentHandler {
   base: BaseHandler,
   parser: ExpressionParser,
@@ -111,8 +155,9 @@ impl VariableAssignmentHandler {
 }
 
 impl InputHandler for VariableAssignmentHandler {
-  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> Result<Option<f64>, String> {
+  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> HandleResult {
     let trimmed = input.trim();
+
     if let Some((name, value_str)) = trimmed.split_once('=') {
       let name = name.trim();
       let value_str = value_str.trim();
@@ -142,7 +187,11 @@ impl InputHandler for VariableAssignmentHandler {
   }
 }
 
-// Handles expressions (evaluates them)
+// ==================== //
+// D. ExpressionHandler //
+// ==================== //
+
+// Handles expressions by evaluating them
 pub struct ExpressionHandler {
   base: BaseHandler,
   parser: ExpressionParser,
@@ -158,7 +207,7 @@ impl ExpressionHandler {
 }
 
 impl InputHandler for ExpressionHandler {
-  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> Result<Option<f64>, String> {
+  fn handle(&self, input: &str, processor: &mut CommandProcessor) -> HandleResult {
     let trimmed = input.trim();
 
     // Parse the expression
@@ -182,6 +231,7 @@ pub fn create_input_chain(parser: ExpressionParser) -> Box<CommandHandler> {
   let mut var_handler = VariableAssignmentHandler::new(parser.clone());
   let expr_handler = ExpressionHandler::new(parser);
 
+  // pipeline: command_handler -> var_handler -> expr_handler
   var_handler.set_next(Box::new(expr_handler));
   command_handler.set_next(Box::new(var_handler));
 

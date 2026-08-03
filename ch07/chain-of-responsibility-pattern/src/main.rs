@@ -2,7 +2,10 @@
 //
 // Complete, idiomatic Rust implementation representing a support ticket routing system (First Line Support → Supervisor)
 
-// 1. Define the Request using an enum
+// =================================== //
+// 1. Define the Request using an enum //
+// =================================== //
+
 #[derive(Debug, Clone)]
 pub enum SupportRequest {
   PasswordReset,
@@ -10,15 +13,22 @@ pub enum SupportRequest {
   CorporateContract,
 }
 
-// 2. Define the Handler trait with dynamic dispatch capability
+// ============================================================ //
+// 2. Define the Handler trait with dynamic dispatch capability //
+// ============================================================ //
+
 pub trait Handler {
-  fn set_next_handler(&mut self, next: Box<dyn Handler>);
   fn handle(&self, request: &SupportRequest);
+  fn set_next_handler(&mut self, next: Box<dyn Handler>);
 }
 
-// 3. Create Concrete Handlers
+// =========================== //
+// 3. Create Concrete Handlers //
+// =========================== //
 
-// FirstLineSupport
+// =================== //
+// A. FirstLineSupport //
+// =================== //
 
 pub struct FirstLineSupport {
   next_handler: Option<Box<dyn Handler>>,
@@ -54,10 +64,12 @@ impl Handler for FirstLineSupport {
   }
 }
 
-// Supervisor
+// ============= //
+// B. Supervisor //
+// ============= //
 
 pub struct Supervisor {
-  next: Option<Box<dyn Handler>>,
+  next_handler: Option<Box<dyn Handler>>,
 }
 
 impl Default for Supervisor {
@@ -68,20 +80,20 @@ impl Default for Supervisor {
 
 impl Supervisor {
   pub fn new() -> Self {
-    Self { next: None }
+    Self { next_handler: None }
   }
 }
 
 impl Handler for Supervisor {
   fn set_next_handler(&mut self, next: Box<dyn Handler>) {
-    self.next = Some(next);
+    self.next_handler = Some(next);
   }
 
   // Supervisor can only handle BillingIssues
   fn handle(&self, request: &SupportRequest) {
     if matches!(request, SupportRequest::BillingIssue) {
       println!("Supervisor: Resolved the BillingIssue request.");
-    } else if let Some(ref next_handler) = self.next {
+    } else if let Some(ref next_handler) = self.next_handler {
       println!("Supervisor: Cannot handle. Passing to next...");
       next_handler.handle(request);
     } else {
@@ -90,7 +102,10 @@ impl Handler for Supervisor {
   }
 }
 
-// 4. Construct the chain and execute
+// ================================== //
+// 4. Construct the chain and execute //
+// ================================== //
+
 fn main() {
   let mut first = FirstLineSupport::new();
   let supervisor = Supervisor::new();
