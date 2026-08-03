@@ -1,0 +1,18 @@
+[package]
+name = "strategy-pattern"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[[bin]]
+name = 'static'
+path= './src/static-dispatch.rs'
+
+[[bin]]
+name = 'dynamic'
+path= './src/dynamic-dispatch.rs'
+
+[[bin]]
+name = 'functional'
+path= './src/functional.rs'

@@ -1,0 +1,17 @@
+[package]
+name = "mediator-pattern"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+brazier = "0.1.0"
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+[[bin]]
+name='top-down-ownership'
+path='./src/top-down-ownership.rs'
+
+[[bin]]
+name='net-style-messageing-mediator'
+path='./src/net-style-messageing-mediator.rs'
