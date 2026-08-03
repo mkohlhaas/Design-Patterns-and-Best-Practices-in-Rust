@@ -4,6 +4,12 @@ To construct an Abstract Syntax Tree (AST) using the [Shunting-Yard algorithm](h
 
 Instead of writing text tokens directly to a stream, you wrap incoming numbers into leaf nodes, and when processing operators, you pop child trees off the operand stack to link them beneath a new operator node.
 
+
+#### Shunting Yard Youtube Videos:
+
+- [Fundamental Algorithms in Scala: Problem Explanation](https://www.youtube.com/watch?v=A-SSrZUHYSk)
+- [CS 235 Lab 3 Overview - The Shunting Yard](https://www.youtube.com/watch?v=HJOnJU77EUs)
+
 ------------------------------
 ## 🛠️ Core Components
 
@@ -13,13 +19,13 @@ Instead of writing text tokens directly to a stream, you wrap incoming numbers i
 
 ------------------------------
 ## ⚙️ Step-by-Step Algorithm Rules
-Read your infix expression from left to right, token by token: [4, 5] 
+Read your infix expression from left to right, token by token:
 
    1. If the token is a Number (Operand):
    * Create a leaf node containing the number.
-      * Push this node onto the operand stack. [1] 
+      * Push this node onto the operand stack.
    2. If the token is a Left Parenthesis (:
-   * Push it directly onto the operator stack. [4] 
+   * Push it directly onto the operator stack.
    3. If the token is an Operator (op₁):
    * While there is an operator (op₂) at the top of the operator stack, and op₂ has higher or equal precedence than op₁ (and op₁ is left-associative), pop op₂ and execute a Tree Build Step (defined below).
       * Push op₁ onto the operator stack.
@@ -56,71 +62,13 @@ Let's parse the expression: 3 + 4 * 2
 
 Final Constructed AST Hierarchy:
 
+```
+```result:
+
     +
    / \
   3   *
      / \
     4   2
-
-------------------------------
-## 💻 Implementation in Python
-Here is a clean, minimal object-oriented implementation:
-
-```python
 ```
-class ASTNode:
-    def __init__(self, value):
-        self.value = value
-        self.left = None
-        self.right = None
-def build_ast(expression_tokens):
-    # Precedence lookup configuration
-    precedence = {'+': 1, '-': 1, '*': 2, '/': 2}
-    
-    operator_stack = []
-    operand_stack = []
 
-    def build_tree_step():
-        operator = operator_stack.pop()
-        node = ASTNode(operator)
-        # Right child is popped first due to LIFO stack nature
-        node.right = operand_stack.pop()
-        node.left = operand_stack.pop()
-        operand_stack.append(node)
-
-    for token in expression_tokens:
-        if isinstance(token, (int, float)) or token.isdigit():
-            # Rule 1: Operands become leaves
-            operand_stack.append(ASTNode(token))
-            
-        elif token == '(':
-            # Rule 2: Open parenthesis
-            operator_stack.append(token)
-            
-        elif token in precedence:
-            # Rule 3: Operators handling priority
-            while (operator_stack and operator_stack[-1] in precedence and 
-                   precedence[operator_stack[-1]] >= precedence[token]):
-                build_tree_step()
-            operator_stack.append(token)
-            
-        elif token == ')':
-            # Rule 4: Close parenthesis unwinding
-            while operator_stack and operator_stack[-1] != '(':
-                build_tree_step()
-            operator_stack.pop() # Discard the '('
-
-    # Rule 5: Flush out any remaining operations
-    while operator_stack:
-        build_tree_step()
-
-    # The remaining node is the root node of our mathematical AST
-    return operand_stack[0]
-
-# Verification
-tokens = ["3", "+", "4", "*", "2"]root = build_ast(tokens)
-
-print(f"Root Node: {root.value}")         # Output: +
-print(f"Left Child: {root.left.value}")   # Output: 3
-print(f"Right Child: {root.right.value}") # Output: *
-```

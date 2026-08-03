@@ -36,8 +36,8 @@ impl ASTNode {
 // Get operator precedence weight
 fn precedence(op: char) -> i32 {
   match op {
-    '+' | '-' => 1,
     '*' | '/' => 2,
+    '+' | '-' => 1,
     _ => 0,
   }
 }
