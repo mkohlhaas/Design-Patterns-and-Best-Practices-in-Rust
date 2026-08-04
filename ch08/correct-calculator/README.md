@@ -2,7 +2,7 @@
 
 This is the final implementation of the Correct Calculator project, showcasing the design patterns covered in Chapters 5-8.
 
-## Featured Design Patterns
+### Featured Design Patterns
 
 ### Chapter 5: Creational Patterns
 - Factory Methods
@@ -32,7 +32,7 @@ This is the final implementation of the Correct Calculator project, showcasing t
 - Observer
 - Visitor
 
-## Running the Calculator
+### Running the Calculator
 
 To run the calculator:
 
