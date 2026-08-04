@@ -1,7 +1,11 @@
 // Components are simple structures.
+//
 // The mediator orchestrates all interactions by taking ownership of the components and managing state transitions from the top level.
 
-// 1. Define the components
+// ======================== //
+// 1. Define the components //
+// ======================== //
+
 struct InputField {
     pub value: String,
 }
@@ -10,7 +14,10 @@ struct SubmitButton {
     pub enabled: bool,
 }
 
-// 2. Define the Mediator that completely owns the components
+// ========================================================== //
+// 2. Define the Mediator that completely owns the components //
+// ========================================================== //
+
 struct FormMediator {
     input_field: InputField,
     submit_button: SubmitButton,

@@ -53,8 +53,8 @@ impl<T: DataMinerSteps> DataMiner for T {
 //   }
 // }
 
-// The Rust compiler will reject it immediately because the blanket implementation already claims
-// ownership over how DataMiner behaves for those types.
+// NOTE: The Rust compiler will reject it immediately because the blanket implementation already claims
+// ownership over how DataMiner behaves for those types!!!
 
 // ============================================================ //
 // 4. Private extension trait to house the shared helper logic. //

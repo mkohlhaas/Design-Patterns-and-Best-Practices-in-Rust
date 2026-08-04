@@ -9,6 +9,12 @@
 // delegates evaluation to whatever strategy is currently active, and strategies can be swapped at
 // runtime without changing the calculator code.
 
+// When to Use the Strategy Pattern
+//
+// Consider the Strategy pattern when you find yourself writing large conditional blocks that select
+// between algorithm variants. If those variants share a common interface, extracting them into
+// strategies makes the code cleaner and more testable.
+
 // We are using the static strategy pattern
 
 // 1. Define the Strategy Interfaces

@@ -1,5 +1,8 @@
 ### The Mediator Pattern
 
+The Mediator pattern provides a way to reduce direct
+dependencies between components by having them communicate through a central coordinator.
+
 The Mediator design pattern in Rust is considered an anti-pattern when
 implemented using the classic object-oriented approach. Having multiple
 components hold mutable cross-references to each other directly violates Rust's

@@ -3,36 +3,38 @@
 // ============================================================ //
 
 trait DataMiner {
-    // The Template Method: This controls the fixed workflow
+    // A. The Template Method: This controls the fixed workflow //
+
     fn mine(&self, path: &str) {
         self.open_file(path);
         self.extract_data();
         self.parse_data();
-        self.hook(); // Optional lifecycle hook
+        self.hook(); // optional lifecycle hook
         self.close_file();
     }
 
-    // Shared default behavior for invariant steps
+    // B. Shared default behavior for invariant steps //
+
     fn open_file(&self, path: &str) {
         println!("Opening: {}", path);
     }
     fn close_file(&self) {
         println!("Closing file handle.");
     }
+    fn hook(&self) {} // optional step with an empty default implementation
 
-    // Abstract methods: Concrete types must implement these
+    // C. Abstract methods: Concrete types must implement these //
+
     fn extract_data(&self);
     fn parse_data(&self);
-
-    // Hook: Optional step with an empty default implementation
-    fn hook(&self) {}
 }
 
 // ========================== //
 // 2. Concrete Implementation //
 // ========================== //
 
-// A. Concrete Implementation for PDF files
+// A. Concrete Implementation for PDF files //
+
 struct PdfMiner;
 impl DataMiner for PdfMiner {
     fn extract_data(&self) {
@@ -44,7 +46,8 @@ impl DataMiner for PdfMiner {
     }
 }
 
-// B. Concrete Implementation for CSV files
+// B. Concrete Implementation for CSV files //
+
 struct CsvMiner;
 impl DataMiner for CsvMiner {
     fn extract_data(&self) {

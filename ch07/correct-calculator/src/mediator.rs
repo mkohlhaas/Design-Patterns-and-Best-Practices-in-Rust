@@ -1,19 +1,34 @@
 // mediator.rs - Mediator pattern implementation
 
+// Mediator Pattern: Coordinating Components
+//
+// The Mediator pattern addresses a common challenge in complex systems: how to enable
+// communication between multiple components without creating tight coupling between them. As
+// systems grow, direct communication between components leads to a tangled web of dependencies
+// that becomes difficult to maintain and extend. The Mediator pattern solves this by introducing a
+// central coordinator that manages all interactions between components.
+//
+// In essence, the Mediator pattern defines an object that encapsulates how a set of objects interact.
+// This promotes loose coupling by keeping objects from referring to each other explicitly, allowing
+// them to focus on their core responsibilities.
+//
+// The Mediator pattern breaks these direct dependencies. Each component knows only about the
+// mediator, and the mediator knows about all components.
+//
+// We'll implement this pattern in three parts: first, defining the mediator interface and event types,
+// then showing how components interact with the mediator, and finally implementing the concrete
+// mediator that orchestrates everything. This is a pattern that works cleanly for one service, but could
+// also adapt to a multi-service architecture through a communication interface.
+
+// 1. Define the components
+//   - A. EvaluationComponent
+//   - B. VariableStorage
+//   - C. ConsoleDisplay
+// 2. Define the Mediator that completely owns the components
+
 use crate::config::AngleMode;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-
-// Mediator interface
-pub trait CalculatorMediator: Send + Sync {
-    fn notify(&mut self, sender: &str, event: CalculatorEvent);
-    fn get_result(&self) -> Option<f64>;
-    fn get_variable(&self, name: &str) -> Option<f64>;
-    fn get_all_variables(&self) -> HashMap<String, f64>;
-    fn set_variable(&mut self, name: &str, value: f64);
-    fn evaluate(&mut self, expression: &str) -> Result<f64, String>;
-    fn change_angle_mode(&mut self, mode: AngleMode);
-}
 
 // Events that can be sent through the mediator
 pub enum CalculatorEvent {
@@ -24,16 +39,37 @@ pub enum CalculatorEvent {
     ErrorOccurred(String),
 }
 
-// Display component interface
-pub trait Display: Send + Sync {
-    fn show_result(&mut self, result: f64);
-    fn show_message(&mut self, message: &str);
-    fn show_error(&mut self, error: &str);
-    fn clear(&mut self);
+// Mediator interface
+pub trait CalculatorMediator: Send + Sync {
+    // The notify method is the core of the mediator's functionality. Components call this method to
+    // announce events, and the mediator decides how to distribute them.
+    fn notify(&mut self, sender: &str, event: CalculatorEvent);
+
+    // Components don't access each other directly; instead, they ask the mediator.
+    fn get_result(&self) -> Option<f64>;
+    fn get_variable(&self, name: &str) -> Option<f64>;
+    fn get_all_variables(&self) -> HashMap<String, f64>;
+    fn set_variable(&mut self, name: &str, value: f64);
+    fn evaluate(&mut self, expression: &str) -> Result<f64, String>;
+    fn change_angle_mode(&mut self, mode: AngleMode);
 }
+
+// //////////////////////// //
+// 1. Define the components //
+// //////////////////////// //
+
+// All components have a `mediator` field.
+
+// ====================== //
+// A. EvaluationComponent //
+// ====================== //
 
 // Component that handles evaluation
 pub struct EvaluationComponent {
+    // Arc provides shared ownership so multiple components can hold references. Mutex ensures safe
+    // mutable access. Only one component can interact with the mediator at a time. The dyn keyword
+    // indicates a trait object, enabling runtime polymorphism if we need different mediator
+    // implementations.
     mediator: Arc<Mutex<dyn CalculatorMediator>>,
     parser: crate::parser::ExpressionParser,
 }
@@ -68,6 +104,10 @@ impl EvaluationComponent {
         Ok(result)
     }
 }
+
+// ================== //
+// B. VariableStorage //
+// ================== //
 
 // Component that manages variables
 pub struct VariableStorage {
@@ -107,6 +147,18 @@ impl VariableStorage {
     }
 }
 
+// ================= //
+// C. ConsoleDisplay //
+// ================= //
+
+// Display component interface
+pub trait Display: Send + Sync {
+    fn show_result(&mut self, result: f64);
+    fn show_message(&mut self, message: &str);
+    fn show_error(&mut self, error: &str);
+    fn clear(&mut self);
+}
+
 // Console display component
 pub struct ConsoleDisplay {
     mediator: Arc<Mutex<dyn CalculatorMediator>>,
@@ -138,11 +190,23 @@ impl Display for ConsoleDisplay {
     }
 }
 
+// ========================================================== //
+// 2. Define the Mediator that completely owns the components //
+// ========================================================== //
+
+// The concrete mediator knows about all components and orchestrates their interactions. It's the
+// one place in the system with knowledge of the overall architecture.
+
 // Concrete mediator implementation
 pub struct CalculatorMediatorImpl {
+    // Components References
+    //
+    // Using Option for component references enables flexible initialization. Components can be
+    // registered after the mediator is created, and some components might be optional.
     evaluator: Option<Arc<EvaluationComponent>>,
     variables: Option<Arc<Mutex<VariableStorage>>>,
     display: Option<Arc<Mutex<dyn Display>>>,
+
     last_result: Option<f64>,
     angle_mode: AngleMode,
 }
@@ -157,6 +221,8 @@ impl CalculatorMediatorImpl {
             angle_mode: AngleMode::Radians,
         }
     }
+
+    // Registration Methods
 
     pub fn set_evaluator(&mut self, evaluator: Arc<EvaluationComponent>) {
         self.evaluator = Some(evaluator);

@@ -56,6 +56,7 @@ impl DynamicCheckout {
     }
 
     // swaps the strategy at runtime
+    // TODO: could also return the old payment strategy using e.g. `.take()`
     fn change_strategy(&mut self, new_strategy: Box<dyn PaymentStrategy>) {
         self.strategy = new_strategy;
     }

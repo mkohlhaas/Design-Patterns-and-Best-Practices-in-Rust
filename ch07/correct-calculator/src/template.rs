@@ -4,9 +4,15 @@ use crate::expression::Expression;
 use crate::token::Token;
 use std::collections::HashMap;
 
+// ============================================================ //
+// 1. The Trait defines the contract and the algorithm skeleton //
+// ============================================================ //
+
 // Abstract base class defining template method
 pub trait ExpressionEvaluator {
-    // Template method defining the algorithm
+    // A. The Template Method: This controls the fixed workflow //
+
+    // workflow: tokenize -> validate -> parse -> evaluate
     fn evaluate(&self, expression: &str, variables: &HashMap<String, f64>) -> Result<f64, String> {
         // 1. Tokenize the expression
         let tokens = self.tokenize(expression)?;
@@ -21,7 +27,8 @@ pub trait ExpressionEvaluator {
         self.evaluate_parsed(parsed, variables)
     }
 
-    // Common steps implemented in base trait
+    // B. Shared default behavior for invariant steps //
+
     fn tokenize(&self, expression: &str) -> Result<Vec<Token>, String> {
         // Default tokenization implementation
         // Space-delimited for simplicity
@@ -60,7 +67,8 @@ pub trait ExpressionEvaluator {
         Ok(())
     }
 
-    // Steps that implementations must provide
+    // C. Abstract methods: Concrete types must implement these //
+
     fn parse(&self, tokens: Vec<Token>) -> Result<Box<dyn Expression>, String>;
 
     fn evaluate_parsed(

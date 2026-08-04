@@ -33,7 +33,7 @@ impl ExpressionParser {
     }
 
     fn build_expression_tree(&self, tokens: Vec<Token>) -> Result<Box<dyn Expression>, String> {
-        // Implementation of the shunting yard algorithm
+        // Implementation of the Shunting Yard Algorithm
         let mut output_queue: Vec<Box<dyn Expression>> = Vec::new();
         let mut operator_stack: Vec<Token> = Vec::new();
 

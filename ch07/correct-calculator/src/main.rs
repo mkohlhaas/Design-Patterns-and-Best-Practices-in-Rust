@@ -84,6 +84,7 @@ mod bridge {
             self.strategy.evaluate(expression, variables)
         }
 
+        // TODO: maybe you want to return the old EvaluationStrategy using e.g. .take()
         pub fn change_strategy(&mut self, strategy: Box<dyn EvaluationStrategy>) {
             self.strategy = strategy;
         }
