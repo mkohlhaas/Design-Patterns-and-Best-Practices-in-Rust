@@ -11,11 +11,11 @@
 // ///////////////////////////////////// //
 
 pub trait Button {
-  fn render(&self) -> String;
+    fn render(&self) -> String;
 }
 
 pub trait Checkbox {
-  fn render(&self) -> String;
+    fn render(&self) -> String;
 }
 
 // //////////////////// //
@@ -28,16 +28,16 @@ pub trait Checkbox {
 
 struct WindowsButton;
 impl Button for WindowsButton {
-  fn render(&self) -> String {
-    "Rendering a Windows-style button.".to_string()
-  }
+    fn render(&self) -> String {
+        "Rendering a Windows-style button.".to_string()
+    }
 }
 
 struct WindowsCheckbox;
 impl Checkbox for WindowsCheckbox {
-  fn render(&self) -> String {
-    "Rendering a Windows-style checkbox.".to_string()
-  }
+    fn render(&self) -> String {
+        "Rendering a Windows-style checkbox.".to_string()
+    }
 }
 
 // ///////////////////////////////////// //
@@ -46,16 +46,16 @@ impl Checkbox for WindowsCheckbox {
 
 struct LinuxButton;
 impl Button for LinuxButton {
-  fn render(&self) -> String {
-    "Rendering a Linux-style button.".to_string()
-  }
+    fn render(&self) -> String {
+        "Rendering a Linux-style button.".to_string()
+    }
 }
 
 struct LinuxCheckbox;
 impl Checkbox for LinuxCheckbox {
-  fn render(&self) -> String {
-    "Rendering a Linux-style checkbox.".to_string()
-  }
+    fn render(&self) -> String {
+        "Rendering a Linux-style checkbox.".to_string()
+    }
 }
 
 // /////////////////////////////////// //
@@ -64,11 +64,11 @@ impl Checkbox for LinuxCheckbox {
 
 // NOTE: We use associated types to define the relationship between the factory and its products!
 pub trait UIFactory {
-  type B: Button;
-  type C: Checkbox;
+    type B: Button;
+    type C: Checkbox;
 
-  fn create_button(&self) -> Self::B;
-  fn create_checkbox(&self) -> Self::C;
+    fn create_button(&self) -> Self::B;
+    fn create_checkbox(&self) -> Self::C;
 }
 
 // ///////////////////// //
@@ -81,16 +81,16 @@ pub trait UIFactory {
 
 struct WindowsFactory;
 impl UIFactory for WindowsFactory {
-  type B = WindowsButton;
-  type C = WindowsCheckbox;
+    type B = WindowsButton;
+    type C = WindowsCheckbox;
 
-  fn create_button(&self) -> Self::B {
-    WindowsButton
-  }
+    fn create_button(&self) -> Self::B {
+        WindowsButton
+    }
 
-  fn create_checkbox(&self) -> Self::C {
-    WindowsCheckbox
-  }
+    fn create_checkbox(&self) -> Self::C {
+        WindowsCheckbox
+    }
 }
 
 // ///////////////////////////////////// //
@@ -99,16 +99,16 @@ impl UIFactory for WindowsFactory {
 
 struct LinuxFactory;
 impl UIFactory for LinuxFactory {
-  type B = LinuxButton;
-  type C = LinuxCheckbox;
+    type B = LinuxButton;
+    type C = LinuxCheckbox;
 
-  fn create_button(&self) -> Self::B {
-    LinuxButton
-  }
+    fn create_button(&self) -> Self::B {
+        LinuxButton
+    }
 
-  fn create_checkbox(&self) -> Self::C {
-    LinuxCheckbox
-  }
+    fn create_checkbox(&self) -> Self::C {
+        LinuxCheckbox
+    }
 }
 
 // //////////////////////////////////////// //
@@ -117,17 +117,17 @@ impl UIFactory for LinuxFactory {
 
 // Using generics means zero runtime overhead for the abstraction
 fn create_ui<F: UIFactory>(factory: F) {
-  let button = factory.create_button();
-  let checkbox = factory.create_checkbox();
+    let button = factory.create_button();
+    let checkbox = factory.create_checkbox();
 
-  println!("{}", button.render());
-  println!("{}", checkbox.render());
+    println!("{}", button.render());
+    println!("{}", checkbox.render());
 }
 
 fn main() {
-  println!("Testing Windows UI:");
-  create_ui(WindowsFactory);
+    println!("Testing Windows UI:");
+    create_ui(WindowsFactory);
 
-  println!("\nTesting Linux UI:");
-  create_ui(LinuxFactory);
+    println!("\nTesting Linux UI:");
+    create_ui(LinuxFactory);
 }

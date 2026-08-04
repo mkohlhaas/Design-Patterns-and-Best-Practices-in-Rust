@@ -4,34 +4,34 @@
 
 // 1. The Trait
 trait TextProcessor {
-  fn process(&self, text: &str) -> String;
+    fn process(&self, text: &str) -> String;
 }
 
 // 2. The Base Component
 struct SimpleProcessor;
 
 impl TextProcessor for SimpleProcessor {
-  fn process(&self, text: &str) -> String {
-    text.to_string()
-  }
+    fn process(&self, text: &str) -> String {
+        text.to_string()
+    }
 }
 
 // 3. The Dynamic Decorator (Uses references or Boxes to dyn traits)
 struct RuntimeDecorator<'a> {
-  wrapped: &'a dyn TextProcessor,
+    wrapped: &'a dyn TextProcessor,
 }
 
 impl<'a> TextProcessor for RuntimeDecorator<'a> {
-  fn process(&self, text: &str) -> String {
-    format!("Decorated({})", self.wrapped.process(text))
-  }
+    fn process(&self, text: &str) -> String {
+        format!("Decorated({})", self.wrapped.process(text))
+    }
 }
 
 fn main() {
-  let base = SimpleProcessor;
+    let base = SimpleProcessor;
 
-  // Wrapped dynamically at runtime using references
-  let dynamic_decorated = RuntimeDecorator { wrapped: &base };
+    // Wrapped dynamically at runtime using references
+    let dynamic_decorated = RuntimeDecorator { wrapped: &base };
 
-  println!("{}", dynamic_decorated.process("hello")); // Outputs: Decorated(hello)
+    println!("{}", dynamic_decorated.process("hello")); // Outputs: Decorated(hello)
 }

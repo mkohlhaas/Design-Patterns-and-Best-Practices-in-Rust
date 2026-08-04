@@ -9,11 +9,11 @@
 
 // Structs only implement these variable, format-specific steps.
 trait DataMinerSteps {
-  fn extract_data(&self);
-  fn parse_data(&self);
+    fn extract_data(&self);
+    fn parse_data(&self);
 
-  // Optional hook step
-  fn hook(&self) {}
+    // Optional hook step
+    fn hook(&self) {}
 }
 
 // ===================== //
@@ -22,7 +22,7 @@ trait DataMinerSteps {
 
 // Holds the public entry point for the algorithm workflow.
 trait DataMiner {
-  fn mine(&self, path: &str);
+    fn mine(&self, path: &str);
 }
 
 // ============================= //
@@ -31,14 +31,14 @@ trait DataMiner {
 
 // Contains the immutable workflow and the shared invariant steps.
 impl<T: DataMinerSteps> DataMiner for T {
-  fn mine(&self, path: &str) {
-    // Enforced algorithmic order
-    self.open_file(path);
-    self.extract_data();
-    self.parse_data();
-    self.hook();
-    self.close_file(path);
-  }
+    fn mine(&self, path: &str) {
+        // Enforced algorithmic order
+        self.open_file(path);
+        self.extract_data();
+        self.parse_data();
+        self.hook();
+        self.close_file(path);
+    }
 }
 
 // ================================= //
@@ -61,19 +61,19 @@ impl<T: DataMinerSteps> DataMiner for T {
 // ============================================================ //
 
 trait InvariantSteps {
-  fn open_file(&self, path: &str);
-  fn close_file(&self, path: &str);
+    fn open_file(&self, path: &str);
+    fn close_file(&self, path: &str);
 }
 
 // This prevents concrete structs from seeing, calling, or overriding them.
 impl<T: DataMinerSteps> InvariantSteps for T {
-  fn open_file(&self, path: &str) {
-    println!("Opening file system handle for: {}", path);
-  }
+    fn open_file(&self, path: &str) {
+        println!("Opening file system handle for: {}", path);
+    }
 
-  fn close_file(&self, path: &str) {
-    println!("Closing file handle and flushing buffers for: {}\n", path);
-  }
+    fn close_file(&self, path: &str) {
+        println!("Closing file handle and flushing buffers for: {}\n", path);
+    }
 }
 
 // =========================== //
@@ -82,37 +82,37 @@ impl<T: DataMinerSteps> InvariantSteps for T {
 
 struct PdfMiner;
 impl DataMinerSteps for PdfMiner {
-  fn extract_data(&self) {
-    println!("Extracting raw bytes from PDF...");
-  }
+    fn extract_data(&self) {
+        println!("Extracting raw bytes from PDF...");
+    }
 
-  fn parse_data(&self) {
-    println!("Parsing PDF byte stream into text.");
-  }
+    fn parse_data(&self) {
+        println!("Parsing PDF byte stream into text.");
+    }
 }
 
 struct CsvMiner;
 impl DataMinerSteps for CsvMiner {
-  fn extract_data(&self) {
-    println!("Reading rows from CSV...");
-  }
+    fn extract_data(&self) {
+        println!("Reading rows from CSV...");
+    }
 
-  fn parse_data(&self) {
-    println!("Parsing CSV rows into structured fields.");
-  }
+    fn parse_data(&self) {
+        println!("Parsing CSV rows into structured fields.");
+    }
 
-  fn hook(&self) {
-    println!("CsvMiner Hook: Validating CSV headers.");
-  }
+    fn hook(&self) {
+        println!("CsvMiner Hook: Validating CSV headers.");
+    }
 }
 
 fn main() {
-  let pdf_worker = PdfMiner;
-  let csv_worker = CsvMiner;
+    let pdf_worker = PdfMiner;
+    let csv_worker = CsvMiner;
 
-  println!("=== Processing PDF ===");
-  pdf_worker.mine("report.pdf");
+    println!("=== Processing PDF ===");
+    pdf_worker.mine("report.pdf");
 
-  println!("=== Processing CSV ===");
-  csv_worker.mine("data.csv");
+    println!("=== Processing CSV ===");
+    csv_worker.mine("data.csv");
 }

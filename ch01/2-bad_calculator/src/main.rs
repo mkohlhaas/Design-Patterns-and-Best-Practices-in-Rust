@@ -7,26 +7,26 @@ type ExprResult = String;
 type ExprError = String;
 
 fn evaluate_expression(expression: &str) -> Result<ExprResult, ExprError> {
-  todo!()
+    todo!()
 }
 
 fn main() {
-  let mut buf = String::new();
+    let mut buf = String::new();
 
-  loop {
-    print!("> ");
-    std::io::stdout().flush().unwrap();
+    loop {
+        print!("> ");
+        std::io::stdout().flush().unwrap();
 
-    buf.clear();
-    std::io::stdin().read_line(&mut buf).unwrap();
+        buf.clear();
+        std::io::stdin().read_line(&mut buf).unwrap();
 
-    if buf.trim() == "exit" {
-      exit(0)
+        if buf.trim() == "exit" {
+            exit(0)
+        }
+
+        match evaluate_expression(&buf) {
+            Ok(result) => println!("{result}"),
+            Err(error) => println!("Error: {error}"),
+        }
     }
-
-    match evaluate_expression(&buf) {
-      Ok(result) => println!("{result}"),
-      Err(error) => println!("Error: {error}"),
-    }
-  }
 }

@@ -3,7 +3,7 @@
 // ================================ //
 
 trait PaymentStrategy {
-  fn pay(&self, amount: u32);
+    fn pay(&self, amount: u32);
 }
 
 // ================================ //
@@ -15,13 +15,13 @@ trait PaymentStrategy {
 // ============= //
 
 struct CreditCard {
-  card_number: String,
+    card_number: String,
 }
 
 impl PaymentStrategy for CreditCard {
-  fn pay(&self, amount: u32) {
-    println!("Paid {} using Credit Card ({})", amount, self.card_number);
-  }
+    fn pay(&self, amount: u32) {
+        println!("Paid {} using Credit Card ({})", amount, self.card_number);
+    }
 }
 
 // ========= //
@@ -29,13 +29,13 @@ impl PaymentStrategy for CreditCard {
 // ========= //
 
 struct PayPal {
-  email: String,
+    email: String,
 }
 
 impl PaymentStrategy for PayPal {
-  fn pay(&self, amount: u32) {
-    println!("Paid {} using PayPal ({})", amount, self.email);
-  }
+    fn pay(&self, amount: u32) {
+        println!("Paid {} using PayPal ({})", amount, self.email);
+    }
 }
 
 // ==================================== //
@@ -43,17 +43,17 @@ impl PaymentStrategy for PayPal {
 // ==================================== //
 
 struct CheckoutContext<T: PaymentStrategy> {
-  strategy: T, // similar to bridge pattern
+    strategy: T, // similar to bridge pattern
 }
 
 impl<T: PaymentStrategy> CheckoutContext<T> {
-  fn new(strategy: T) -> Self {
-    Self { strategy }
-  }
+    fn new(strategy: T) -> Self {
+        Self { strategy }
+    }
 
-  fn complete_purchase(&self, amount: u32) {
-    self.strategy.pay(amount);
-  }
+    fn complete_purchase(&self, amount: u32) {
+        self.strategy.pay(amount);
+    }
 }
 
 // ===== //
@@ -61,19 +61,19 @@ impl<T: PaymentStrategy> CheckoutContext<T> {
 // ===== //
 
 fn main() {
-  {
-    // Credit Card
-    let card_checkout = CheckoutContext::new(CreditCard {
-      card_number: String::from("1234-5678"),
-    });
-    card_checkout.complete_purchase(100);
-  }
+    {
+        // Credit Card
+        let card_checkout = CheckoutContext::new(CreditCard {
+            card_number: String::from("1234-5678"),
+        });
+        card_checkout.complete_purchase(100);
+    }
 
-  {
-    // PayPal
-    let paypal_checkout = CheckoutContext::new(PayPal {
-      email: String::from("user@example.com"),
-    });
-    paypal_checkout.complete_purchase(250);
-  }
+    {
+        // PayPal
+        let paypal_checkout = CheckoutContext::new(PayPal {
+            email: String::from("user@example.com"),
+        });
+        paypal_checkout.complete_purchase(250);
+    }
 }

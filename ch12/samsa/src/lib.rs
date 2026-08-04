@@ -22,22 +22,22 @@ pub use producer::Producer;
 pub use sealed::{JsonSchema, MessageHandler, MessageSchema, TextSchema, TypedMessage};
 pub use types::{ConsumerId, MessageId, TopicId};
 pub use typestate_consumer::{
-  ConnectedConsumer, ConnectionInfo, Consumer as TypedConsumer, DisconnectedConsumer,
-  PausedConsumer, SubscribedConsumer,
+    ConnectedConsumer, ConnectionInfo, Consumer as TypedConsumer, DisconnectedConsumer,
+    PausedConsumer, SubscribedConsumer,
 };
 
 // Chapter 11 additions - Functional Programming Patterns
 pub use closures::{EventBus, MessageFilter, MessageRouter, Pipeline, SystemEvent};
 pub use pattern_matching::{
-  ConfigValue, ConnectionEvent, ConnectionState, DatabaseConfig, MessageContent, Priority,
-  ProcessingResult, RichMessage,
+    ConfigValue, ConnectionEvent, ConnectionState, DatabaseConfig, MessageContent, Priority,
+    ProcessingResult, RichMessage,
 };
 pub use pipeline::{
-  AdvancedPipeline, EventTransformation, MessagePipeline, SubscriptionEvent,
-  SubscriptionProcessing, SubscriptionStats,
+    AdvancedPipeline, EventTransformation, MessagePipeline, SubscriptionEvent,
+    SubscriptionProcessing, SubscriptionStats,
 };
 pub use type_classes::{
-  Activatable, Cancellable, MessageDeliverable, Subscription, SubscriptionManager, Suspendable,
+    Activatable, Cancellable, MessageDeliverable, Subscription, SubscriptionManager, Suspendable,
 };
 
 // Chapter 12 additions - Unique Rust Features

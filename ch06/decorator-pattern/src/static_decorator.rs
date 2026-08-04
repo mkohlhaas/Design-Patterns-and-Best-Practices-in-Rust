@@ -5,35 +5,35 @@
 
 // 1. The Trait
 trait TextProcessor {
-  fn process(&self, text: &str) -> String;
+    fn process(&self, text: &str) -> String;
 }
 
 // 2. The Base Component
 struct SimpleProcessor;
 
 impl TextProcessor for SimpleProcessor {
-  fn process(&self, text: &str) -> String {
-    text.to_string()
-  }
+    fn process(&self, text: &str) -> String {
+        text.to_string()
+    }
 }
 
 // 3. The Static Decorator (Uses Generic T)
 struct UppercaseDecorator<T: TextProcessor> {
-  wrapped: T,
+    wrapped: T,
 }
 
 impl<T: TextProcessor> TextProcessor for UppercaseDecorator<T> {
-  fn process(&self, text: &str) -> String {
-    // Enhance base behavior
-    self.wrapped.process(text).to_uppercase()
-  }
+    fn process(&self, text: &str) -> String {
+        // Enhance base behavior
+        self.wrapped.process(text).to_uppercase()
+    }
 }
 
 fn main() {
-  let base = SimpleProcessor;
+    let base = SimpleProcessor;
 
-  // Stacked at compile time. No allocation.
-  let decorated = UppercaseDecorator { wrapped: base };
+    // Stacked at compile time. No allocation.
+    let decorated = UppercaseDecorator { wrapped: base };
 
-  println!("{}", decorated.process("hello rust!")); // Outputs: HELLO RUST!
+    println!("{}", decorated.process("hello rust!")); // Outputs: HELLO RUST!
 }

@@ -5,43 +5,43 @@ use std::sync::OnceLock;
 
 #[derive(Debug, Clone)]
 pub enum AngleMode {
-  Degrees,
-  Radians,
+    Degrees,
+    Radians,
 }
 
 #[derive(Debug, Clone)]
 pub struct CalculatorConfig {
-  pub precision: u32,
-  pub angle_mode: AngleMode,
-  pub notation: NumberFormat,
+    pub precision: u32,
+    pub angle_mode: AngleMode,
+    pub notation: NumberFormat,
 }
 
 impl Default for CalculatorConfig {
-  fn default() -> Self {
-    Self {
-      precision: 10,
-      angle_mode: AngleMode::Radians,
-      notation: NumberFormat::Decimal,
+    fn default() -> Self {
+        Self {
+            precision: 10,
+            angle_mode: AngleMode::Radians,
+            notation: NumberFormat::Decimal,
+        }
     }
-  }
 }
 
 impl CalculatorConfig {
-  // Factory methods for common configurations
-  pub fn scientific() -> Self {
-    Self {
-      precision: 15,
-      angle_mode: AngleMode::Radians,
-      notation: NumberFormat::Scientific,
+    // Factory methods for common configurations
+    pub fn scientific() -> Self {
+        Self {
+            precision: 15,
+            angle_mode: AngleMode::Radians,
+            notation: NumberFormat::Scientific,
+        }
     }
-  }
 
-  pub fn engineering() -> Self {
-    Self {
-      notation: NumberFormat::Engineering,
-      ..Default::default()
+    pub fn engineering() -> Self {
+        Self {
+            notation: NumberFormat::Engineering,
+            ..Default::default()
+        }
     }
-  }
 }
 
 // Constants
@@ -52,30 +52,30 @@ pub const MAX_PRECISION: u32 = 100;
 static CONFIG: OnceLock<CalculatorConfig> = OnceLock::new();
 
 pub fn get_global_config() -> &'static CalculatorConfig {
-  CONFIG.get_or_init(|| {
-    // In a real application, this might load from a file or environment
-    CalculatorConfig::default()
-  })
+    CONFIG.get_or_init(|| {
+        // In a real application, this might load from a file or environment
+        CalculatorConfig::default()
+    })
 }
 
 // Thread-safe calculator with shared config
 use std::sync::{Arc, Mutex};
 
 pub struct CalculatorPool {
-  shared_config: Arc<CalculatorConfig>,
-  // In a real application, this would store calculator instances
-  _calculators: Vec<()>,
+    shared_config: Arc<CalculatorConfig>,
+    // In a real application, this would store calculator instances
+    _calculators: Vec<()>,
 }
 
 impl CalculatorPool {
-  pub fn new(config: CalculatorConfig) -> Self {
-    Self {
-      shared_config: Arc::new(config),
-      _calculators: Vec::new(),
+    pub fn new(config: CalculatorConfig) -> Self {
+        Self {
+            shared_config: Arc::new(config),
+            _calculators: Vec::new(),
+        }
     }
-  }
 
-  pub fn get_config(&self) -> Arc<CalculatorConfig> {
-    Arc::clone(&self.shared_config)
-  }
+    pub fn get_config(&self) -> Arc<CalculatorConfig> {
+        Arc::clone(&self.shared_config)
+    }
 }

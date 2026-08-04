@@ -3,7 +3,7 @@
 // ================================ //
 
 trait PaymentStrategy {
-  fn pay(&self, amount: u32);
+    fn pay(&self, amount: u32);
 }
 
 // ================================ //
@@ -15,13 +15,13 @@ trait PaymentStrategy {
 // ============= //
 
 struct CreditCard {
-  card_number: String,
+    card_number: String,
 }
 
 impl PaymentStrategy for CreditCard {
-  fn pay(&self, amount: u32) {
-    println!("Paid {} using Credit Card ({})", amount, self.card_number);
-  }
+    fn pay(&self, amount: u32) {
+        println!("Paid {} using Credit Card ({})", amount, self.card_number);
+    }
 }
 
 // ========= //
@@ -29,13 +29,13 @@ impl PaymentStrategy for CreditCard {
 // ========= //
 
 struct PayPal {
-  email: String,
+    email: String,
 }
 
 impl PaymentStrategy for PayPal {
-  fn pay(&self, amount: u32) {
-    println!("Paid {} using PayPal ({})", amount, self.email);
-  }
+    fn pay(&self, amount: u32) {
+        println!("Paid {} using PayPal ({})", amount, self.email);
+    }
 }
 
 // ========================================= //
@@ -43,22 +43,22 @@ impl PaymentStrategy for PayPal {
 // ========================================= //
 
 struct DynamicCheckout {
-  strategy: Box<dyn PaymentStrategy>,
+    strategy: Box<dyn PaymentStrategy>,
 }
 
 impl DynamicCheckout {
-  fn new(strategy: Box<dyn PaymentStrategy>) -> Self {
-    Self { strategy }
-  }
+    fn new(strategy: Box<dyn PaymentStrategy>) -> Self {
+        Self { strategy }
+    }
 
-  fn complete_purchase(&self, amount: u32) {
-    self.strategy.pay(amount);
-  }
+    fn complete_purchase(&self, amount: u32) {
+        self.strategy.pay(amount);
+    }
 
-  // swaps the strategy at runtime
-  fn change_strategy(&mut self, new_strategy: Box<dyn PaymentStrategy>) {
-    self.strategy = new_strategy;
-  }
+    // swaps the strategy at runtime
+    fn change_strategy(&mut self, new_strategy: Box<dyn PaymentStrategy>) {
+        self.strategy = new_strategy;
+    }
 }
 
 // ===== //
@@ -66,16 +66,16 @@ impl DynamicCheckout {
 // ===== //
 
 fn main() {
-  // Initialize with Credit Card
-  let mut checkout = DynamicCheckout::new(Box::new(CreditCard {
-    card_number: String::from("4321-8765"),
-  }));
-  checkout.complete_purchase(50);
+    // Initialize with Credit Card
+    let mut checkout = DynamicCheckout::new(Box::new(CreditCard {
+        card_number: String::from("4321-8765"),
+    }));
+    checkout.complete_purchase(50);
 
-  // Swap to PayPal at runtime
-  checkout.change_strategy(Box::new(PayPal {
-    email: String::from("switch@example.com"),
-  }));
+    // Swap to PayPal at runtime
+    checkout.change_strategy(Box::new(PayPal {
+        email: String::from("switch@example.com"),
+    }));
 
-  checkout.complete_purchase(75);
+    checkout.complete_purchase(75);
 }

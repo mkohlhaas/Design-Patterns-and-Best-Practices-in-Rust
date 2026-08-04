@@ -7,48 +7,48 @@ use std::sync::OnceLock;
 
 #[derive(Default, Debug, Clone)]
 pub enum AngleMode {
-  Degrees,
-  #[default]
-  Radians,
+    Degrees,
+    #[default]
+    Radians,
 }
 
 #[derive(Debug, Clone)]
 pub struct CalculatorConfig {
-  pub precision: u32,
-  pub angle_mode: AngleMode,
-  pub notation: NumberFormat,
+    pub precision: u32,
+    pub angle_mode: AngleMode,
+    pub notation: NumberFormat,
 }
 
 impl Default for CalculatorConfig {
-  fn default() -> Self {
-    Self {
-      precision: 10,
-      angle_mode: Default::default(),
-      notation: Default::default(),
+    fn default() -> Self {
+        Self {
+            precision: 10,
+            angle_mode: Default::default(),
+            notation: Default::default(),
+        }
     }
-  }
 }
 
 impl CalculatorConfig {
-  pub fn standard() -> Self {
-    Default::default()
-  }
-
-  // Factory methods for common configurations
-  pub fn scientific() -> Self {
-    Self {
-      precision: 15,
-      notation: NumberFormat::Scientific,
-      ..Default::default()
+    pub fn standard() -> Self {
+        Default::default()
     }
-  }
 
-  pub fn engineering() -> Self {
-    Self {
-      notation: NumberFormat::Engineering,
-      ..Default::default()
+    // Factory methods for common configurations
+    pub fn scientific() -> Self {
+        Self {
+            precision: 15,
+            notation: NumberFormat::Scientific,
+            ..Default::default()
+        }
     }
-  }
+
+    pub fn engineering() -> Self {
+        Self {
+            notation: NumberFormat::Engineering,
+            ..Default::default()
+        }
+    }
 }
 
 // Constants
@@ -59,10 +59,10 @@ pub const MAX_PRECISION: u32 = 100;
 static CONFIG: OnceLock<CalculatorConfig> = OnceLock::new();
 
 pub fn get_global_config() -> &'static CalculatorConfig {
-  CONFIG.get_or_init(|| {
-    // In a real application, this might load from a file or environment
-    Default::default()
-  })
+    CONFIG.get_or_init(|| {
+        // In a real application, this might load from a file or environment
+        Default::default()
+    })
 }
 
 // Thread-safe calculator with shared config
@@ -70,20 +70,20 @@ use std::sync::Arc;
 
 #[derive(Default)]
 pub struct CalculatorPool {
-  shared_config: Arc<CalculatorConfig>,
-  // In a real application, this would store calculator instances
-  _calculators: Vec<()>,
+    shared_config: Arc<CalculatorConfig>,
+    // In a real application, this would store calculator instances
+    _calculators: Vec<()>,
 }
 
 impl CalculatorPool {
-  pub fn new(config: CalculatorConfig) -> Self {
-    Self {
-      shared_config: Arc::new(config),
-      _calculators: Default::default(),
+    pub fn new(config: CalculatorConfig) -> Self {
+        Self {
+            shared_config: Arc::new(config),
+            _calculators: Default::default(),
+        }
     }
-  }
 
-  pub fn get_config(&self) -> Arc<CalculatorConfig> {
-    Arc::clone(&self.shared_config)
-  }
+    pub fn get_config(&self) -> Arc<CalculatorConfig> {
+        Arc::clone(&self.shared_config)
+    }
 }

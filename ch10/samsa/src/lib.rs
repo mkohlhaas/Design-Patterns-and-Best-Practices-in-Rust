@@ -18,8 +18,8 @@ pub use producer::Producer;
 pub use sealed::{JsonSchema, MessageHandler, MessageSchema, TextSchema, TypedMessage};
 pub use types::{ConsumerId, MessageId, TopicId};
 pub use typestate_consumer::{
-  ConnectedConsumer, ConnectionInfo, Consumer as TypedConsumer, DisconnectedConsumer,
-  PausedConsumer, SubscribedConsumer,
+    ConnectedConsumer, ConnectionInfo, Consumer as TypedConsumer, DisconnectedConsumer,
+    PausedConsumer, SubscribedConsumer,
 };
 
 mod broker;
