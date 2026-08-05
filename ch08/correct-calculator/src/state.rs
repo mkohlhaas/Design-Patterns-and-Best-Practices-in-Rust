@@ -2,7 +2,6 @@
 
 use crate::adapter::ScientificOperations;
 use crate::config::AngleMode;
-use crate::expression::{Expression, NumberExpression};
 use crate::parser::ExpressionParser;
 use std::collections::HashMap;
 

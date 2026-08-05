@@ -3,7 +3,7 @@
 use crate::expression::{
     BinaryOperation, Expression, FunctionCall, NumberExpression, VariableExpression,
 };
-use crate::token::{Function, Operator, Token};
+use crate::token::Token;
 
 #[derive(Clone)]
 pub struct ExpressionParser;
@@ -47,25 +47,18 @@ impl ExpressionParser {
                 }
                 Token::Operator(op) => {
                     // While there's an operator on the stack with greater precedence
-                    loop {
-                        if let Some(Token::Operator(top_op)) = operator_stack.last().cloned() {
-                            if top_op.precedence() >= op.precedence() {
-                                operator_stack.pop();
+                    while let Some(Token::Operator(top_op)) = operator_stack.last().cloned() {
+                        if top_op.precedence() >= op.precedence() {
+                            operator_stack.pop();
 
-                                if output_queue.len() < 2 {
-                                    return Err(
-                                        "Invalid expression: not enough operands".to_string()
-                                    );
-                                }
-
-                                let right = output_queue.pop().unwrap();
-                                let left = output_queue.pop().unwrap();
-
-                                output_queue
-                                    .push(Box::new(BinaryOperation::new(left, right, top_op)));
-                            } else {
-                                break;
+                            if output_queue.len() < 2 {
+                                return Err("Invalid expression: not enough operands".to_string());
                             }
+
+                            let right = output_queue.pop().unwrap();
+                            let left = output_queue.pop().unwrap();
+
+                            output_queue.push(Box::new(BinaryOperation::new(left, right, top_op)));
                         } else {
                             break;
                         }

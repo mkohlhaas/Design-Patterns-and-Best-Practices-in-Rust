@@ -88,10 +88,7 @@ impl DependentVariableObserver {
     }
 
     pub fn add_dependency(&mut self, variable: &str, dependent: &str, expression: &str) {
-        let dependencies = self
-            .dependencies
-            .entry(variable.to_string())
-            .or_insert_with(Vec::new);
+        let dependencies = self.dependencies.entry(variable.to_string()).or_default();
 
         dependencies.push((dependent.to_string(), expression.to_string()));
     }
@@ -123,7 +120,7 @@ impl Observer for DependentVariableObserver {
         } else if let CalculatorEvent::StateRestored = event {
             // Re-evaluate all dependent variables
             let mut calc = self.calculator.lock().unwrap();
-            for (_, dependents) in &self.dependencies {
+            for dependents in self.dependencies.values() {
                 for (dependent, expr) in dependents {
                     if let Ok(value) = calc.evaluate_expression(expr) {
                         calc.set_variable(dependent, value);

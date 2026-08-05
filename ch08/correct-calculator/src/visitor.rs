@@ -100,11 +100,9 @@ impl OptimizationVisitor {
     }
 
     fn get_constant_value(&self, expr: &dyn Expression) -> Option<f64> {
-        if let Some(num_expr) = expr.as_any().downcast_ref::<NumberExpression>() {
-            Some(num_expr.value)
-        } else {
-            None
-        }
+        expr.as_any()
+            .downcast_ref::<NumberExpression>()
+            .map(|num_expr| num_expr.value)
     }
 
     fn optimize_subexpression(
@@ -326,12 +324,11 @@ impl ExpressionVisitor for ValidationVisitor {
 
     fn visit_binary_op(&mut self, expr: &BinaryOperation) -> Result<(), String> {
         // Check for division by zero in constant expressions
-        if let Operator::Divide = expr.operator {
-            if let Some(right) = expr.right.as_any().downcast_ref::<NumberExpression>() {
-                if right.value == 0.0 {
-                    self.errors.push("Division by zero".to_string());
-                }
-            }
+        if let Operator::Divide = expr.operator
+            && let Some(right) = expr.right.as_any().downcast_ref::<NumberExpression>()
+            && right.value == 0.0
+        {
+            self.errors.push("Division by zero".to_string());
         }
 
         Ok(())
@@ -341,11 +338,11 @@ impl ExpressionVisitor for ValidationVisitor {
         // Validate function arguments
         match expr.function {
             Function::Sqrt => {
-                if let Some(arg) = expr.argument.as_any().downcast_ref::<NumberExpression>() {
-                    if arg.value < 0.0 {
-                        self.errors
-                            .push("Cannot take square root of negative number".to_string());
-                    }
+                if let Some(arg) = expr.argument.as_any().downcast_ref::<NumberExpression>()
+                    && arg.value < 0.0
+                {
+                    self.errors
+                        .push("Cannot take square root of negative number".to_string());
                 }
             }
             Function::Tan => {

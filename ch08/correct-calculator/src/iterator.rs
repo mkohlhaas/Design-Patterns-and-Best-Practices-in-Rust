@@ -179,7 +179,7 @@ fn collect_nodes_by_type(
                 }
             }
             NodeType::Variable => {
-                if let Some(_) = op.as_variable() {
+                if op.as_variable().is_some() {
                     result.push(op.clone_box());
                 }
             }
@@ -197,7 +197,7 @@ fn collect_nodes_by_type(
                 }
             }
             NodeType::Variable => {
-                if let Some(_) = func.as_variable() {
+                if func.as_variable().is_some() {
                     result.push(func.clone_box());
                 }
             }
@@ -209,9 +209,9 @@ fn collect_nodes_by_type(
         if node_type == NodeType::Constant {
             result.push(num.clone_box());
         }
-    } else if let Some(var) = expr.as_any().downcast_ref::<VariableExpression>() {
-        if node_type == NodeType::Variable {
-            result.push(var.clone_box());
-        }
+    } else if let Some(var) = expr.as_any().downcast_ref::<VariableExpression>()
+        && node_type == NodeType::Variable
+    {
+        result.push(var.clone_box());
     }
 }

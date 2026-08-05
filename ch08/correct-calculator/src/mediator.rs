@@ -172,7 +172,7 @@ impl CalculatorMediatorImpl {
 }
 
 impl CalculatorMediator for CalculatorMediatorImpl {
-    fn notify(&mut self, sender: &str, event: CalculatorEvent) {
+    fn notify(&mut self, _sender: &str, event: CalculatorEvent) {
         match event {
             CalculatorEvent::ResultComputed(result) => {
                 self.last_result = Some(result);

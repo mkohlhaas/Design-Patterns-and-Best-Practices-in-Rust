@@ -251,25 +251,18 @@ impl ShuntingYardStrategy {
                 }
                 Token::Operator(op) => {
                     // While there's an operator on the stack with greater precedence
-                    loop {
-                        if let Some(Token::Operator(top_op)) = operator_stack.last().cloned() {
-                            if top_op.precedence() >= op.precedence() {
-                                operator_stack.pop();
+                    while let Some(Token::Operator(top_op)) = operator_stack.last().cloned() {
+                        if top_op.precedence() >= op.precedence() {
+                            operator_stack.pop();
 
-                                if output_queue.len() < 2 {
-                                    return Err(
-                                        "Invalid expression: not enough operands".to_string()
-                                    );
-                                }
-
-                                let right = output_queue.pop().unwrap();
-                                let left = output_queue.pop().unwrap();
-
-                                output_queue
-                                    .push(Box::new(BinaryOperation::new(left, right, top_op)));
-                            } else {
-                                break;
+                            if output_queue.len() < 2 {
+                                return Err("Invalid expression: not enough operands".to_string());
                             }
+
+                            let right = output_queue.pop().unwrap();
+                            let left = output_queue.pop().unwrap();
+
+                            output_queue.push(Box::new(BinaryOperation::new(left, right, top_op)));
                         } else {
                             break;
                         }
@@ -296,20 +289,20 @@ impl ShuntingYardStrategy {
                                 if let Some(function_idx) = operator_stack
                                     .iter()
                                     .position(|t| matches!(t, Token::Function(_)))
+                                    && let Token::Function(func) = &operator_stack[function_idx]
                                 {
-                                    if let Token::Function(func) = &operator_stack[function_idx] {
-                                        // Remove the function token
-                                        let func = func.clone();
-                                        operator_stack.remove(function_idx);
+                                    // Remove the function token
+                                    let func = func.clone();
+                                    operator_stack.remove(function_idx);
 
-                                        if output_queue.is_empty() {
-                                            return Err("Invalid function call: missing argument"
-                                                .to_string());
-                                        }
-
-                                        let arg = output_queue.pop().unwrap();
-                                        output_queue.push(Box::new(FunctionCall::new(func, arg)));
+                                    if output_queue.is_empty() {
+                                        return Err(
+                                            "Invalid function call: missing argument".to_string()
+                                        );
                                     }
+
+                                    let arg = output_queue.pop().unwrap();
+                                    output_queue.push(Box::new(FunctionCall::new(func, arg)));
                                 }
 
                                 break;
@@ -396,11 +389,11 @@ impl TokenizationStrategy for AdvancedTokenizer {
                 c if c.is_whitespace() => continue,
 
                 // Numbers
-                c if c.is_digit(10) || c == '.' => {
+                c if c.is_ascii_digit() || c == '.' => {
                     let mut num_str = c.to_string();
 
                     while let Some(next_c) = chars.peek() {
-                        if next_c.is_digit(10) || *next_c == '.' {
+                        if next_c.is_ascii_digit() || *next_c == '.' {
                             num_str.push(chars.next().unwrap());
                         } else {
                             break;

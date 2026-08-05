@@ -1,6 +1,8 @@
 // main.rs - Main entry point for the calculator
 // Incorporates all design patterns from Chapters 5-8
 
+#![allow(dead_code)]
+
 // Chapter 5-7 modules
 mod adapter;
 mod bridge;
@@ -25,20 +27,17 @@ use std::collections::HashMap;
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex};
 
-use bridge::{ConsoleDisplay, Display};
+use bridge::ConsoleDisplay;
 use chain::create_input_chain;
-use command::{
-    Calculator, ClearVariablesCommand, CommandProcessor, EvaluateCommand, SetVariableCommand,
-};
+use command::{ClearVariablesCommand, CommandProcessor, SetVariableCommand};
 use iterator::HistoryIterator;
 use memento::{
-    CalculatorMemento, CalculatorStateManager, CalculatorStateType, MementoOriginator,
-    RestoreStateCommand, SaveStateCommand, get_angle_mode, get_calculator_state_type,
-    get_number_base,
+    CalculatorMemento, CalculatorStateManager, MementoOriginator, get_angle_mode,
+    get_calculator_state_type, get_number_base,
 };
 use observer::{
-    CalculatorEvent, DependentVariableObserver, DisplayObserver, LoggerObserver,
-    ObservableCalculator, Observer, Subject, VariableProvider,
+    CalculatorEvent, DisplayObserver, LoggerObserver, ObservableCalculator, Observer, Subject,
+    VariableProvider,
 };
 use parser::ExpressionParser;
 use state::{CalculatorState, StandardMode, StateCalculator};
@@ -99,8 +98,8 @@ impl CorrectCalculator {
     }
 
     fn process_input(&mut self, input: &str) -> Result<Option<f64>, String> {
-        if input.starts_with("/") {
-            self.process_command(&input[1..])
+        if let Some(stripped) = input.strip_prefix("/") {
+            self.process_command(stripped)
         } else if let Some((name, value_str)) = input.split_once('=') {
             // Variable assignment
             let name = name.trim();
@@ -412,7 +411,7 @@ fn main() {
 }
 
 // Example using the State pattern directly
-fn _run_with_state() {
+fn run_with_state() {
     println!("Correct Calculator with State Pattern");
 
     let mut calculator = StateCalculator::new();
@@ -443,7 +442,7 @@ fn _run_with_state() {
 }
 
 // Example using the Memento pattern directly
-fn _run_with_memento() {
+fn run_with_memento() {
     println!("Correct Calculator with Memento Pattern");
 
     let mut calculator = StateCalculator::new();
@@ -518,7 +517,7 @@ fn _run_with_memento() {
 }
 
 // Example using the Observer pattern directly
-fn _run_with_observer() {
+fn run_with_observer() {
     println!("Correct Calculator with Observer Pattern");
 
     let mut calculator = StateCalculator::new();
@@ -562,11 +561,11 @@ fn _run_with_observer() {
 }
 
 // Example using the Visitor pattern directly
-fn _run_with_visitor() {
+fn run_with_visitor() {
     println!("Correct Calculator with Visitor Pattern");
 
     let parser = ExpressionParser::new();
-    let mut variables = HashMap::new();
+    let variables = HashMap::new();
 
     loop {
         print!("> ");
