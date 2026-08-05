@@ -1,10 +1,18 @@
 // iterator.rs - Iterator pattern implementation for collections in the calculator
 
+// Several iterators for history, reverse history and variables
+
 use crate::command::Calculation;
 use crate::expression::{
     BinaryOperation, Expression, FunctionCall, NumberExpression, VariableExpression,
 };
 use std::collections::HashMap;
+
+// =================== //
+// A. History Iterator //
+// =================== //
+
+// see cargo project `iterator-pattern` for an alternative implementation
 
 // History iterator that provides access to past results
 pub struct HistoryIterator<'a> {
@@ -35,6 +43,10 @@ impl<'a> Iterator for HistoryIterator<'a> {
     }
 }
 
+// =========================== //
+// B. Reverse History Iterator //
+// =========================== //
+
 // A reverse iterator for the history
 pub struct ReverseHistoryIterator<'a> {
     history: &'a [Calculation],
@@ -63,6 +75,87 @@ impl<'a> Iterator for ReverseHistoryIterator<'a> {
     }
 }
 
+// ===================== //
+// C. Variables Iterator //
+// ===================== //
+
+// Variables map iterator
+pub struct VariablesIterator<'a> {
+    inner: std::collections::hash_map::Iter<'a, String, f64>,
+}
+
+impl<'a> VariablesIterator<'a> {
+    pub fn new(variables: &'a HashMap<String, f64>) -> Self {
+        Self {
+            inner: variables.iter(),
+        }
+    }
+}
+
+impl<'a> Iterator for VariablesIterator<'a> {
+    type Item = (&'a String, &'a f64);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
+}
+
+// =========================== //
+// Traversing expression trees //
+// =========================== //
+
+struct ExpressionIterator<'a> {
+    stack: Vec<&'a dyn Expression>,
+}
+impl<'a> ExpressionIterator<'a> {
+    fn new(root: &'a dyn Expression) -> Self {
+        let stack = vec![root];
+        Self { stack }
+    }
+}
+
+// Code does not work!!!
+
+// Google AI:
+//
+// Trait Object Method Dispatch: ExpressionIterator calls node.as_binary_op(). However, as_binary_op
+// is implemented for dyn Expression to always return None. The overridden methods on concrete
+// structs like BinaryOperation are completely bypassed when using a trait object (&dyn Expression),
+// because Rust does not support structural downcasting or automatic virtual dispatch for extension
+// traits this way.
+
+// Google AI advices to use the visitor pattern.
+
+impl<'a> Iterator for ExpressionIterator<'a> {
+    type Item = &'a dyn Expression;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.stack.pop() {
+            // NOTE: Wrong!
+            // Push children onto stack for depth-first traversal
+            // as_binary_op() is a downcast method on Expression that
+            // returns Some(&BinaryOperation) if the expression is a
+            // binary operation, or None otherwise. as_function() works
+            // similarly for FunctionCall.
+            if let Some(op) = node.as_binary_op() {
+                self.stack.push(&*op.right); // dereference-then-borrow pattern for Box
+                self.stack.push(&*op.left);
+            } else if let Some(func) = node.as_function() {
+                self.stack.push(&*func.argument);
+            }
+            Some(node)
+        } else {
+            None
+        }
+    }
+}
+
+// Downcasting and Safety
+//
+// The code relies on safe downcasting patterns (as_binary_op, as_function).
+// This is a common workaround in Rust because standard trait objects do not natively support
+// downcasting without explicit helper methods or the use of Any.
+
 // Extension trait for expression tree traversal
 pub trait ExpressionExt {
     fn as_binary_op(&self) -> Option<&BinaryOperation> {
@@ -82,7 +175,9 @@ pub trait ExpressionExt {
     }
 }
 
-impl ExpressionExt for dyn Expression {
+// NOTE: that was the change `+ 'a`
+// But the other implementations won't be called!
+impl<'a> ExpressionExt for dyn Expression + 'a {
     fn as_binary_op(&self) -> Option<&BinaryOperation> {
         None
     }
@@ -97,6 +192,7 @@ impl ExpressionExt for dyn Expression {
     }
 }
 
+// NOTE: These functions will never be called.
 impl ExpressionExt for BinaryOperation {
     fn as_binary_op(&self) -> Option<&BinaryOperation> {
         Some(self)
@@ -121,27 +217,6 @@ impl ExpressionExt for VariableExpression {
 impl ExpressionExt for FunctionCall {
     fn as_function(&self) -> Option<&FunctionCall> {
         Some(self)
-    }
-}
-
-// Variables map iterator
-pub struct VariablesIterator<'a> {
-    inner: std::collections::hash_map::Iter<'a, String, f64>,
-}
-
-impl<'a> VariablesIterator<'a> {
-    pub fn new(variables: &'a HashMap<String, f64>) -> Self {
-        Self {
-            inner: variables.iter(),
-        }
-    }
-}
-
-impl<'a> Iterator for VariablesIterator<'a> {
-    type Item = (&'a String, &'a f64);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next()
     }
 }
 
