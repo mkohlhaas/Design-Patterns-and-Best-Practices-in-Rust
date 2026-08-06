@@ -1,5 +1,16 @@
 // state.rs - State pattern implementation for calculator modes
 
+// 1. State interface
+//   - A. Standard calculator mode
+//   - B. Scientific calculator mode
+//   - C. Programmer calculator mode
+// 2. Calculator context for state pattern
+//
+// Helper functions to avoid borrowing conflicts
+//   - match_standard_input
+//   - match_scientific_input
+//   - match_programmer_input
+
 use crate::adapter::ScientificOperations;
 use crate::config::AngleMode;
 use crate::parser::ExpressionParser;
@@ -61,7 +72,10 @@ impl NumberBase {
     }
 }
 
-// Calculator context for state pattern
+// ======================================= //
+// 2. Calculator context for state pattern //
+// ======================================= //
+
 pub struct StateCalculator {
     pub state: Box<dyn CalculatorState>,
     pub variables: HashMap<String, f64>,
@@ -110,7 +124,10 @@ impl StateCalculator {
     }
 }
 
-// Helper functions to avoid borrowing conflicts
+// ============================================= //
+// Helper functions to avoid borrowing conflicts //
+// ============================================= //
+
 fn match_standard_input(
     input: &str,
     calculator: &mut StateCalculator,
@@ -255,7 +272,10 @@ fn match_programmer_input(
     }
 }
 
-// State interface
+// ================== //
+// 1. State interface //
+// ================== //
+
 pub trait CalculatorState: Send + Sync {
     fn name(&self) -> &str;
     fn handle_input(
@@ -268,7 +288,10 @@ pub trait CalculatorState: Send + Sync {
     fn as_any(&self) -> &dyn std::any::Any;
 }
 
-// Standard calculator mode
+// =========================== //
+// A. Standard calculator mode //
+// =========================== //
+
 pub struct StandardMode {
     pub sci_ops: Box<dyn ScientificOperations>,
 }
@@ -339,7 +362,7 @@ impl CalculatorState for StandardMode {
     }
 
     fn display_prompt(&self) -> String {
-        "[Standard] > ".to_string()
+        "[Standard] >".to_string()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
@@ -347,7 +370,10 @@ impl CalculatorState for StandardMode {
     }
 }
 
-// Scientific calculator mode
+// ============================= //
+// B. Scientific calculator mode //
+// ============================= //
+
 pub struct ScientificMode {
     pub sci_ops: Box<dyn ScientificOperations>,
     pub angle_mode: AngleMode,
@@ -480,8 +506,8 @@ impl CalculatorState for ScientificMode {
 
     fn display_prompt(&self) -> String {
         match self.angle_mode {
-            AngleMode::Radians => "[Scientific (RAD)] > ".to_string(),
-            AngleMode::Degrees => "[Scientific (DEG)] > ".to_string(),
+            AngleMode::Radians => "[Scientific (RAD)] >".to_string(),
+            AngleMode::Degrees => "[Scientific (DEG)] >".to_string(),
         }
     }
 
@@ -490,7 +516,10 @@ impl CalculatorState for ScientificMode {
     }
 }
 
-// Programmer calculator mode
+// ============================= //
+// C. Programmer calculator mode //
+// ============================= //
+
 pub struct ProgrammerMode {
     pub base: NumberBase,
 }
@@ -658,10 +687,10 @@ impl CalculatorState for ProgrammerMode {
 
     fn display_prompt(&self) -> String {
         match self.base {
-            NumberBase::Binary => "[Programmer (BIN)] > ".to_string(),
-            NumberBase::Octal => "[Programmer (OCT)] > ".to_string(),
-            NumberBase::Decimal => "[Programmer (DEC)] > ".to_string(),
-            NumberBase::Hexadecimal => "[Programmer (HEX)] > ".to_string(),
+            NumberBase::Binary => "[Programmer (BIN)] >".to_string(),
+            NumberBase::Octal => "[Programmer (OCT)] >".to_string(),
+            NumberBase::Decimal => "[Programmer (DEC)] >".to_string(),
+            NumberBase::Hexadecimal => "[Programmer (HEX)] >".to_string(),
         }
     }
 
