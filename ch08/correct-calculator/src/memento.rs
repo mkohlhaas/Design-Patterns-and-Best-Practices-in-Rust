@@ -5,7 +5,12 @@ use crate::config::AngleMode;
 use crate::state::{CalculatorState, NumberBase, ProgrammerMode, ScientificMode, StandardMode};
 use std::collections::HashMap;
 
-// Memento to store calculator state
+// ==================================== //
+// 1. Memento to store calculator state //
+// ==================================== //
+
+// The clone cost is the price of independence; for very large states, you might consider copy-on-write techniques.
+
 #[derive(Clone)]
 pub struct CalculatorMemento {
     pub variables: HashMap<String, f64>,
@@ -23,7 +28,41 @@ pub enum CalculatorStateType {
     Programmer,
 }
 
-// Caretaker that manages mementos
+// ====================================================== //
+// 2. Originator trait for creating and applying mementos //
+// ====================================================== //
+
+pub trait MementoOriginator {
+    fn create_memento(&self) -> CalculatorMemento;
+    fn restore_from_memento(&mut self, memento: &CalculatorMemento) -> Result<(), String>;
+}
+
+// Command for saving state
+// pub struct SaveStateCommand {
+//     pub name: String,
+// }
+
+// impl SaveStateCommand {
+//     pub fn new(name: impl Into<String>) -> Self {
+//         Self { name: name.into() }
+//     }
+// }
+
+// Command for restoring state
+// pub struct RestoreStateCommand {
+//     pub name: String,
+// }
+
+// impl RestoreStateCommand {
+//     pub fn new(name: impl Into<String>) -> Self {
+//         Self { name: name.into() }
+//     }
+// }
+
+// ================================== //
+// 3. Caretaker that manages mementos //
+// ================================== //
+
 pub struct CalculatorStateManager {
     saved_states: HashMap<String, CalculatorMemento>,
 }
@@ -64,34 +103,6 @@ impl CalculatorStateManager {
         } else {
             Err(format!("No saved state named '{}'", name))
         }
-    }
-}
-
-// Originator trait for creating and applying mementos
-pub trait MementoOriginator {
-    fn create_memento(&self) -> CalculatorMemento;
-    fn restore_from_memento(&mut self, memento: &CalculatorMemento) -> Result<(), String>;
-}
-
-// Command for saving state
-pub struct SaveStateCommand {
-    pub name: String,
-}
-
-impl SaveStateCommand {
-    pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
-    }
-}
-
-// Command for restoring state
-pub struct RestoreStateCommand {
-    pub name: String,
-}
-
-impl RestoreStateCommand {
-    pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
     }
 }
 
