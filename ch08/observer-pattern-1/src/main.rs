@@ -5,6 +5,7 @@ use std::rc::Rc;
 // 1. Define the Observer trait //
 // ============================ //
 
+// `message` could be an event enum (here it's a generic &str)
 trait Observer {
     fn update(&self, message: &str);
 }
@@ -13,8 +14,10 @@ trait Observer {
 // 2. Define the Subject (Observable) //
 // ================================== //
 
+type ObserverT = Rc<RefCell<dyn Observer>>;
+
 struct Subject {
-    observers: Vec<Rc<RefCell<dyn Observer>>>,
+    observers: Vec<ObserverT>,
 }
 
 impl Subject {
@@ -24,13 +27,14 @@ impl Subject {
         }
     }
 
-    fn register(&mut self, observer: Rc<RefCell<dyn Observer>>) {
+    // often called `register`
+    fn attach(&mut self, observer: ObserverT) {
         self.observers.push(observer);
     }
 
     fn notify(&self, message: &str) {
         for observer in &self.observers {
-            // Use interior mutability to safely access the observer
+            // use interior mutability to safely access the observer
             observer.borrow_mut().update(message);
         }
     }
@@ -65,9 +69,9 @@ fn main() {
         name: "Widget B".to_string(),
     }));
 
-    // Register observers
-    subject.register(widget_one.clone());
-    subject.register(widget_two.clone());
+    // Attach/register observers
+    subject.attach(widget_one.clone());
+    subject.attach(widget_two.clone());
 
     // Broadcast state change
     subject.notify("New data is available!");
