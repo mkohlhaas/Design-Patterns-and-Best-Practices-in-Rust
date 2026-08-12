@@ -15,6 +15,9 @@ enum CartState {
 // 2. A single Cart struct that mutates its internal state //
 // ======================================================= //
 
+// we can only add items
+// Empty -> Filled -> Filled -> ... -> Paid
+
 pub struct Cart {
     state: CartState,
 }

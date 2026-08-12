@@ -1,5 +1,4 @@
-// Blogging workflow—moving from Draft, to Pending Review, to Published—reimagined using the
-// Typestate pattern.
+// Blogging workflow `Draft -> Pending Review -> Published` using the Typestate pattern.
 
 // ================================== //
 // 1. Define the unique state structs //
