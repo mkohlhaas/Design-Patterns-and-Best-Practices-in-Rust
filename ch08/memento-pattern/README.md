@@ -13,6 +13,13 @@ on value-based data structures rather than object reference pointers.
 
 The pattern uses three main structural roles:
 
-* Originator: The live application object that holds the current state. It creates snapshots of itself and consumes them to revert its state.
 * Memento: A lightweight, immutable data structure that contains the saved state snapshot.
+* Originator: The live application object that holds the current state. It creates snapshots of itself and consumes them to revert its state.
 * Caretaker: The object responsible for tracking history (usually using a Vec stack). It stores and returns mementos but cannot view or modify their contents.
+
+### Rust-Specific Design Trade-offs
+
+| Feature | Advantage in Rust | Drawback |
+|---|---|---|
+| Encapsulation | Keeping fields private within a module ensures the Caretaker cannot view inside the Memento. | Over-allocating heap data via continuous .clone() operations can degrade performance. |
+| Ownership | Moving a Memento into history.push() guarantees nobody else can mutate it while it sits in history. | If the Originator's internal structure changes, your Memento struct must be explicitly updated. |

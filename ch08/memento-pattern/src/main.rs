@@ -3,7 +3,7 @@
 // ================================================== //
 
 #[derive(Clone, Debug)]
-pub struct EditorMemento {
+pub struct TextEditorMemento {
     content: String,
 }
 
@@ -33,18 +33,18 @@ impl TextEditor {
     }
 
     pub fn print_content(&self) {
-        println!("Current Text: \"{}\"", self.content);
+        println!("\"{}\"", self.content);
     }
 
     // Creates the Memento snapshot by cloning internal state data
-    pub fn save(&self) -> EditorMemento {
-        EditorMemento {
+    pub fn save(&self) -> TextEditorMemento {
+        TextEditorMemento {
             content: self.content.clone(),
         }
     }
 
     // Restores internal state from a Memento
-    pub fn restore(&mut self, memento: EditorMemento) {
+    pub fn restore(&mut self, memento: TextEditorMemento) {
         self.content = memento.content;
     }
 }
@@ -54,7 +54,7 @@ impl TextEditor {
 // ============================================================================ //
 
 pub struct HistoryCaretaker {
-    history: Vec<EditorMemento>,
+    history: Vec<TextEditorMemento>,
 }
 
 impl Default for HistoryCaretaker {
@@ -70,11 +70,11 @@ impl HistoryCaretaker {
         }
     }
 
-    pub fn save_state(&mut self, memento: EditorMemento) {
+    pub fn save_state(&mut self, memento: TextEditorMemento) {
         self.history.push(memento);
     }
 
-    pub fn undo(&mut self) -> Option<EditorMemento> {
+    pub fn undo(&mut self) -> Option<TextEditorMemento> {
         self.history.pop()
     }
 }
@@ -87,27 +87,22 @@ fn main() {
     let mut editor = TextEditor::new();
     let mut caretaker = HistoryCaretaker::new();
 
-    // Type some text and save the checkpoint
     editor.type_text("Hello, ");
     caretaker.save_state(editor.save());
 
-    // Type more text and save a second checkpoint
     editor.type_text("World!");
     caretaker.save_state(editor.save());
 
-    // Type garbage text that we will eventually want to undo
-    editor.type_text(" This will be deleted.");
-    editor.print_content(); // Out: "Hello, World! This will be deleted."
+    editor.type_text(" This will be undone.");
+    editor.print_content(); // "Hello, World! This will be undone."
 
-    // First undo: Revert to "Hello, World!"
     if let Some(memento) = caretaker.undo() {
         editor.restore(memento);
     }
-    editor.print_content(); // Out: "Hello, World!"
+    editor.print_content(); // "Hello, World!"
 
-    // Second undo: Revert to "Hello, "
     if let Some(memento) = caretaker.undo() {
         editor.restore(memento);
     }
-    editor.print_content(); // Out: "Hello, "
+    editor.print_content(); // "Hello, "
 }
