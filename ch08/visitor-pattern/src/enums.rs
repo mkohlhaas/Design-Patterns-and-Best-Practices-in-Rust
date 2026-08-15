@@ -1,10 +1,16 @@
-// Define the data variations as an enum
+// ======================================== //
+// 1. Define the data variations as an enum //
+// ======================================== //
+
 enum Shape {
     Circle { radius: f64 },
     Rectangle { width: f64, height: f64 },
 }
 
-// Write your "visitor" operations as simple functions or trait methods
+// ======================================================================= //
+// 2. Write your "visitor" operations as simple functions or trait methods //
+// ======================================================================= //
+
 fn calculate_area(shape: &Shape) -> f64 {
     match shape {
         Shape::Circle { radius } => std::f64::consts::PI * radius * radius,
