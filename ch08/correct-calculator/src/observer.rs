@@ -1,11 +1,34 @@
 // observer.rs - Observer pattern implementation for reactive updates
 
+// - 0. Events that can be observed
+// - 1. Define the Observer trait
+// - 2. Define the Subject (Observable)
+// - 3. Implement Concrete Observers
+//   - A. Display observer that updates UI when calculator state changes
+//   - B. Observer for dependent variables
+//   - C. Logger observer that logs all events
+//   - D. History observer that tracks calculation history
+// - 4. Implementation of Subject for a calculator
+
+// Notes:
+//
+// 1. Observer trait:
+//   - update(...)
+// 2. Subject trait:
+//   - registration and notification: attach(...), detach(...)
+//   - notify(...), will call update(...)
+// 4. Subject implementation:
+//   - keeps a list of observers
+
 use crate::bridge::Display;
 use crate::command::Calculation;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-// Events that can be observed
+// ============================== //
+// 0. Events that can be observed //
+// ============================== //
+
 #[derive(Clone, Debug)]
 pub enum CalculatorEvent {
     VariableChanged(String, f64),
@@ -16,20 +39,39 @@ pub enum CalculatorEvent {
     Error(String),
 }
 
-// Observer interface
+// ============================ //
+// 1. Define the Observer trait //
+// ============================ //
+
 pub trait Observer: Send + Sync {
-    fn update(&self, event: &CalculatorEvent);
+    fn update(&self, event: &CalculatorEvent); // will be called from `notify` in the Subject
 }
+
+// ================================== //
+// 2. Define the Subject (Observable) //
+// ================================== //
+
+// Could simply be a struct. Here we use a trait and define a Subject struct later.
 
 // Subject that maintains a list of observers
 pub trait Subject {
     fn attach(&mut self, observer: Box<dyn Observer>) -> usize;
     fn detach(&mut self, observer_id: usize);
-    fn notify(&self, event: &CalculatorEvent);
+    fn notify(&self, event: &CalculatorEvent); // calls update in the Observer
 }
 
-// Display observer that updates UI when calculator state changes
+// =============================== //
+// 3. Implement Concrete Observers //
+// =============================== //
+
+// ================================================================= //
+// A. Display observer that updates UI when calculator state changes //
+// ================================================================= //
+
 pub struct DisplayObserver {
+    // The Arc<Mutex<dyn Display>> enables thread-safe sharing of the display, which is important for
+    // responsive user interfaces where the display might be accessed from both user interface and
+    // calculation threads.
     display: Arc<Mutex<dyn Display>>,
 }
 
@@ -66,7 +108,15 @@ impl Observer for DisplayObserver {
     }
 }
 
-// Observer for dependent variables
+// =================================== //
+// B. Observer for dependent variables //
+// =================================== //
+
+// For more advanced reactive behavior, observers can implement dependent variables, where
+// sum = x + y automatically recalculates when x or y changes. A dependent variable observer watches
+// for VariableChanged events, checks whether the changed variable is a dependency, and triggers
+// recalculation. The full implementation is in the code repository.
+
 pub struct DependentVariableObserver {
     calculator: Arc<Mutex<dyn VariableProvider>>,
     dependencies: HashMap<String, Vec<(String, String)>>, // Map of variable to tuples of dependent var name and expression
@@ -131,7 +181,10 @@ impl Observer for DependentVariableObserver {
     }
 }
 
-// Logger observer that logs all events
+// ======================================= //
+// C. Logger observer that logs all events //
+// ======================================= //
+
 pub struct LoggerObserver;
 
 impl Observer for LoggerObserver {
@@ -159,7 +212,10 @@ impl Observer for LoggerObserver {
     }
 }
 
-// History observer that tracks calculation history
+// =================================================== //
+// D. History observer that tracks calculation history //
+// =================================================== //
+
 pub struct HistoryObserver {
     max_entries: usize,
     history: Arc<Mutex<Vec<Calculation>>>,
@@ -196,8 +252,16 @@ impl Observer for HistoryObserver {
     }
 }
 
-// Implementation of Subject for a calculator
+// ============================================= //
+// 4. Implementation of Subject for a calculator //
+// ============================================= //
+
+// Subject keeps a list of observers
+
+// IDs avoid the need for PartialEq on trait objects, which Rust doesn't support.
+
 pub struct ObservableCalculator {
+    // every observer has an ID (sequence number)
     observers: HashMap<usize, Box<dyn Observer>>,
     next_observer_id: usize,
 }
