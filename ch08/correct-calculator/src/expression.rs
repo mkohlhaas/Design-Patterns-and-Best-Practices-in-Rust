@@ -15,6 +15,7 @@ pub trait Expression: Send + Sync {
     }
 
     // Allow downcasting for visitor pattern
+    // This is also/already defined in the Visitable trait.
     fn as_any(&self) -> &dyn Any;
 
     // Default implementation for cloning

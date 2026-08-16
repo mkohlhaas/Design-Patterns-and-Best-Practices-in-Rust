@@ -2,17 +2,16 @@
 // Visiting Shapes //
 // =============== //
 
-// Visitor pattern is based on double dispatch:
-// 1st dispatch: call `accept` of the Visitable (Shape), e.g. `circle.accept(visitor))``
-// 2nd dispatch: `accept` calls visitor.visit_fn, e.g. visitor.visit_circle(<self=circle>)
-// So it goes from the Visitable back to the Visitor!
-//
-// circle calls function (`accept`) with the visitor
-// in `accept` visitor calls a function with circle as parameter
+// Shape is the Visitable.
 
-// The Visitable trait accepts a Visitor trait and calls a function in the visitor.
-// Visitable: `accept`
-// Visitor: visit_<the different shapes>
+// Visitor   trait has `visit_<functions>`.
+// Visitable trait has `accept function`.
+// Visitable accepts a Visitor and calls one of the visit_<functions>, thereby redirecting execution back to the visitor (double-dispatch)
+
+//      1st dispatch      ->      2nd dispatch
+// circle.accept(visitor) ->  visitor.visit_circle(circle)
+// circle.......(visitor) ->  visitor.............(circle)
+// circle  <->   visitor  <=> visitor <-> circle
 
 // ========================================== //
 // 1. Define the Visitor and Visitable Traits //
@@ -113,11 +112,11 @@ fn main() {
         }),
     ];
 
-    let mut calculator = TotalAreaCalculator::new();
+    let mut total_area_calculator = TotalAreaCalculator::new();
 
     for shape in &shapes {
-        shape.accept(&mut calculator);
+        shape.accept(&mut total_area_calculator);
     }
 
-    println!("Total Area: {}", calculator.total_area);
+    println!("Total Area: {}", total_area_calculator.total_area);
 }

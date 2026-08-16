@@ -1,5 +1,11 @@
 // visitor.rs - Visitor pattern implementation for traversing and transforming expressions
 
+// This is not a proper implementation or rather application of the Visitor pattern.
+// The function `accept(...)` is never called!
+// Normally you would call `accept` from the Visitable (NumberExpression, VariableExpression,
+// BinaryOperation, FunctionCall)
+// You can comment out the Visitable trait and its implementation because it's completly unused.
+
 use crate::expression::{
     BinaryOperation, Expression, FunctionCall, NumberExpression, VariableExpression,
 };
@@ -7,13 +13,9 @@ use crate::token::{Function, Operator};
 use std::any::Any;
 use std::collections::HashMap;
 
-// Visitable interface for expressions
-pub trait Visitable: Send + Sync {
-    fn accept(&self, visitor: &mut dyn ExpressionVisitor) -> Result<(), String>;
-
-    // Allow downcasting from trait object
-    fn as_any(&self) -> &dyn Any;
-}
+// ========================================== //
+// 1. Define the Visitor and Visitable Traits //
+// ========================================== //
 
 // Visitor interface for expression operations
 pub trait ExpressionVisitor {
@@ -22,6 +24,29 @@ pub trait ExpressionVisitor {
     fn visit_binary_op(&mut self, expr: &BinaryOperation) -> Result<(), String>;
     fn visit_function_call(&mut self, expr: &FunctionCall) -> Result<(), String>;
 }
+
+// ============================================================ //
+// 2. The Visitable trait defines the entry point for a visitor //
+// ============================================================ //
+
+// Visitable is an Expression.
+
+// Visitable interface for expressions
+pub trait Visitable: Send + Sync {
+    fn accept(&self, visitor: &mut dyn ExpressionVisitor) -> Result<(), String>;
+
+    // Allow downcasting from trait object
+    // Not used! (Already defined in expression.rs!)
+    fn as_any(&self) -> &dyn Any;
+}
+
+// ================================ //
+// 3. Implement Concrete Data Types //
+// ================================ //
+
+// ------------------- //
+// A. NumberExpression //
+// ------------------- //
 
 // Implementation of Visitable for each expression type
 impl Visitable for NumberExpression {
@@ -34,6 +59,10 @@ impl Visitable for NumberExpression {
     }
 }
 
+// --------------------- //
+// B. VariableExpression //
+// --------------------- //
+
 impl Visitable for VariableExpression {
     fn accept(&self, visitor: &mut dyn ExpressionVisitor) -> Result<(), String> {
         visitor.visit_variable(self)
@@ -43,6 +72,10 @@ impl Visitable for VariableExpression {
         self
     }
 }
+
+// ------------------ //
+// C. BinaryOperation //
+// ------------------ //
 
 impl Visitable for BinaryOperation {
     fn accept(&self, visitor: &mut dyn ExpressionVisitor) -> Result<(), String> {
@@ -55,6 +88,10 @@ impl Visitable for BinaryOperation {
     }
 }
 
+// --------------- //
+// D. FunctionCall //
+// --------------- //
+
 impl Visitable for FunctionCall {
     fn accept(&self, visitor: &mut dyn ExpressionVisitor) -> Result<(), String> {
         // Visit this node
@@ -65,6 +102,14 @@ impl Visitable for FunctionCall {
         self
     }
 }
+
+// ================================ //
+// 4. Implement a Concrete Visitors //
+// ================================ //
+
+// ---------------------- //
+// A. OptimizationVisitor //
+// ---------------------- //
 
 // Concrete visitor for optimizing expressions
 pub struct OptimizationVisitor {
@@ -275,6 +320,10 @@ impl ExpressionVisitor for OptimizationVisitor {
     }
 }
 
+// -------------------- //
+// B. ValidationVisitor //
+// -------------------- //
+
 // Concrete visitor for validating expressions
 pub struct ValidationVisitor {
     pub errors: Vec<String>,
@@ -360,6 +409,10 @@ impl ExpressionVisitor for ValidationVisitor {
         Ok(())
     }
 }
+
+// ---------------- //
+// Helper Functions //
+// ---------------- //
 
 // Function to optimize an expression
 pub fn optimize_expression(
