@@ -11,7 +11,7 @@ use std::sync::Mutex;
 #[derive(Debug)]
 pub struct Broker {
     storage: Arc<Mutex<Storage>>,
-    topic_offsets: Arc<Mutex<HashMap<String, u64>>>,
+    topic_offsets: Arc<Mutex<HashMap<String, u64>>>, // topic -> offset
 }
 
 impl Broker {
