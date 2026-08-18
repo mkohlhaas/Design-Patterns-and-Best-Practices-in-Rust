@@ -6,6 +6,10 @@
 use crate::message::{Event, Message, current_timestamp};
 use std::collections::HashMap;
 
+// ========================================== //
+// Subscription Events and Subscription Stats //
+// ========================================== //
+
 /// Statistics about subscription events
 #[derive(Debug, Default)]
 pub struct SubscriptionStats {
@@ -20,48 +24,31 @@ pub struct SubscriptionEvent {
     pub user_id: u64,
     pub topic: String,
     pub timestamp: u64,
-    pub subscription_type: SubscriptionType,
+    pub event_type: EventType,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum SubscriptionType {
+pub enum EventType {
     Subscribe,
-    Unsubscribe,
+    Unsubscribe, // not used
     Invalid,
 }
 
 impl SubscriptionEvent {
     pub fn is_valid(&self) -> bool {
-        self.subscription_type != SubscriptionType::Invalid
-            && !self.topic.is_empty()
-            && self.user_id > 0
+        self.event_type != EventType::Invalid && !self.topic.is_empty() && self.user_id > 0
     }
 
     pub fn is_subscription(&self) -> bool {
-        self.subscription_type == SubscriptionType::Subscribe
+        self.event_type == EventType::Subscribe
     }
 }
 
-/// Extension trait for subscription event processing
-pub trait SubscriptionProcessing: Iterator<Item = SubscriptionEvent> + Sized {
-    fn valid_subscriptions(self) -> impl Iterator<Item = SubscriptionEvent> {
-        self.filter(|event| event.is_valid())
-            .filter(|event| event.is_subscription())
-    }
+// ============================================== //
+// A. Standard Iterator methods to Process Events //
+// ============================================== //
 
-    fn count_by_topic(self) -> HashMap<String, usize> {
-        self.fold(HashMap::new(), |mut acc, event| {
-            *acc.entry(event.topic).or_insert(0) += 1;
-            acc
-        })
-    }
-
-    fn recent_events(self, cutoff_timestamp: u64) -> impl Iterator<Item = SubscriptionEvent> {
-        self.filter(move |event| event.timestamp >= cutoff_timestamp)
-    }
-}
-
-impl<I> SubscriptionProcessing for I where I: Iterator<Item = SubscriptionEvent> {}
+// Generic - not specific to our problem space.
 
 /// Process subscription events using function pipelines
 pub fn process_subscription_events(events: Vec<SubscriptionEvent>) -> SubscriptionStats {
@@ -87,6 +74,34 @@ pub fn process_subscription_events(events: Vec<SubscriptionEvent>) -> Subscripti
     }
 }
 
+// ================================================== //
+// B. Iterator Extension Trait for SubscriptionEvents //
+// ================================================== //
+
+// Domain-specific combinators make code review easier and reduce the chance of subtle logic errors.
+
+/// Iterator extension trait for subscription event processing
+pub trait SubscriptionProcessing: Iterator<Item = SubscriptionEvent> + Sized {
+    fn valid_subscriptions(self) -> impl Iterator<Item = SubscriptionEvent> {
+        self.filter(|event| event.is_valid())
+            .filter(|event| event.is_subscription())
+    }
+
+    fn count_by_topic(self) -> HashMap<String, usize> {
+        self.fold(HashMap::new(), |mut acc, event| {
+            *acc.entry(event.topic).or_insert(0) += 1;
+            acc
+        })
+    }
+
+    fn recent_events(self, cutoff_timestamp: u64) -> impl Iterator<Item = SubscriptionEvent> {
+        self.filter(move |event| event.timestamp >= cutoff_timestamp)
+    }
+}
+
+// now we have an iterator for SubscriptionEvent's
+impl<I> SubscriptionProcessing for I where I: Iterator<Item = SubscriptionEvent> {}
+
 /// Process recent subscriptions using custom combinators
 pub fn analyze_recent_subscriptions(
     events: Vec<SubscriptionEvent>,
@@ -98,6 +113,16 @@ pub fn analyze_recent_subscriptions(
         .valid_subscriptions()
         .count_by_topic()
 }
+
+// ========= //
+// Pipelines //
+// ========= //
+
+// NOTE: ??? everything that follows; ask AI what this could mean and demand example usages ???
+
+// ------------------- //
+// A. Message Pipeline //
+// ------------------- //
 
 /// Message processing pipeline for filtering and transformation
 pub struct MessagePipeline<F> {
@@ -136,7 +161,11 @@ where
     }
 }
 
-/// Event transformation pipeline
+// -------------------------------- //
+// B. Event Transformation Pipeline //
+// -------------------------------- //
+
+/// Event transformation pipeline (iterator extension for Events)
 pub trait EventTransformation: Iterator<Item = Event> + Sized {
     fn with_topic_prefix(self, prefix: &str) -> impl Iterator<Item = Event> {
         let prefix = prefix.to_string();
@@ -297,19 +326,19 @@ mod tests {
                 user_id: 1,
                 topic: "news".to_string(),
                 timestamp: 100,
-                subscription_type: SubscriptionType::Subscribe,
+                event_type: EventType::Subscribe,
             },
             SubscriptionEvent {
                 user_id: 2,
                 topic: "news".to_string(),
                 timestamp: 200,
-                subscription_type: SubscriptionType::Subscribe,
+                event_type: EventType::Subscribe,
             },
             SubscriptionEvent {
                 user_id: 3,
                 topic: "sports".to_string(),
                 timestamp: 300,
-                subscription_type: SubscriptionType::Subscribe,
+                event_type: EventType::Subscribe,
             },
         ];
 

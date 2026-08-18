@@ -41,25 +41,25 @@ fn demonstrate_function_pipelines() -> std::result::Result<(), Box<dyn std::erro
             user_id: 123,
             topic: "news.technology".to_string(),
             timestamp: current_timestamp(),
-            subscription_type: SubscriptionType::Subscribe,
+            event_type: EventType::Subscribe,
         },
         SubscriptionEvent {
             user_id: 456,
             topic: "news.sports".to_string(),
             timestamp: current_timestamp(),
-            subscription_type: SubscriptionType::Subscribe,
+            event_type: EventType::Subscribe,
         },
         SubscriptionEvent {
             user_id: 789,
             topic: "alerts.system".to_string(),
             timestamp: current_timestamp() - 7200, // 2 hours ago
-            subscription_type: SubscriptionType::Subscribe,
+            event_type: EventType::Subscribe,
         },
         SubscriptionEvent {
             user_id: 0, // Invalid
             topic: "".to_string(),
             timestamp: current_timestamp(),
-            subscription_type: SubscriptionType::Invalid,
+            event_type: EventType::Invalid,
         },
     ];
 
@@ -337,7 +337,7 @@ mod tests {
             user_id: 1,
             topic: "test".to_string(),
             timestamp: current_timestamp(),
-            subscription_type: SubscriptionType::Subscribe,
+            event_type: EventType::Subscribe,
         }];
 
         let stats = process_subscription_events(events);
