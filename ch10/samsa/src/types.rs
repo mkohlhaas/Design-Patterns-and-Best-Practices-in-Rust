@@ -130,13 +130,13 @@ mod tests {
         // Invalid topics
         assert!(TopicId::new("").is_err());
         assert!(TopicId::new("user events").is_err());
-        assert!(TopicId::new(&"a".repeat(129)).is_err());
+        assert!(TopicId::new("a".repeat(129)).is_err());
     }
 
     #[test]
     fn consumer_id_validation() {
         assert!(ConsumerId::new("consumer-1").is_ok());
         assert!(ConsumerId::new("").is_err());
-        assert!(ConsumerId::new(&"a".repeat(65)).is_err());
+        assert!(ConsumerId::new("a".repeat(65)).is_err());
     }
 }

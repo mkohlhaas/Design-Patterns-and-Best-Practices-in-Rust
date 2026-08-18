@@ -64,6 +64,11 @@ pub type ConnectedConsumer = Consumer<states::Connected>;
 pub type SubscribedConsumer = Consumer<states::Subscribed>;
 pub type PausedConsumer = Consumer<states::Paused>;
 
+// Each state transition follows the same pattern: consume the current state, perform an operation,
+// and return the new state or an error. The connected consumer can subscribe to a topic or
+// disconnect. Each transition is a separate impl block, making it impossible to call methods from
+// the wrong state.
+
 /// Implementation for disconnected consumers
 impl Consumer<states::Disconnected> {
     /// Create a new disconnected consumer
@@ -79,6 +84,10 @@ impl Consumer<states::Disconnected> {
 
     /// Connect to the broker, transitioning to Connected state
     pub fn connect(
+        // The connect method consumes the disconnected consumer (taking ownership with self ) and
+        // returns either a Consumer<states::Connected> or an error along with the original
+        // consumer. This ownership transfer prevents reuse. Once you call connect, the
+        // disconnected consumer is gone.
         self,
         connection_info: ConnectionInfo,
     ) -> Result<Consumer<states::Connected>, SamsaError> {

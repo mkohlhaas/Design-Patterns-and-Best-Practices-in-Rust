@@ -7,13 +7,11 @@
 //! - Sealed traits for controlled extensibility
 
 // Core error handling - unified across all modules
-pub use error::{Result, SamsaError};
-
 pub use broker::Broker;
 pub use consumer::Consumer;
+pub use error::{Result, SamsaError};
 pub use message::{Event, Message};
 pub use producer::Producer;
-
 // Chapter 10 additions - Type System Patterns
 pub use sealed::{JsonSchema, MessageHandler, MessageSchema, TextSchema, TypedMessage};
 pub use types::{ConsumerId, MessageId, TopicId};

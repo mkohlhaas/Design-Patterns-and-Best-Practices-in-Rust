@@ -6,6 +6,9 @@
 
 use thiserror::Error;
 
+/// Convenience type alias for Results using SamsaError
+pub type Result<T> = std::result::Result<T, SamsaError>;
+
 /// The main error type for all Samsa operations
 ///
 /// This replaces multiple separate error enums with a single unified type,
@@ -52,9 +55,6 @@ pub enum SamsaError {
     #[error("Connection failed: {0}")]
     Connection(String),
 }
-
-/// Convenience type alias for Results using SamsaError
-pub type Result<T> = std::result::Result<T, SamsaError>;
 
 // Convenience constructors for common error patterns
 impl SamsaError {

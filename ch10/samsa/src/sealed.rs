@@ -4,6 +4,15 @@
 //! type-safe message handling with controlled extensibility.
 
 use crate::types::MessageId;
+use std::{
+    error::Error,
+    fmt::{Debug, Display},
+    marker::PhantomData,
+};
+
+// ========================================== //
+// 1. Private Module to support sealed traits //
+// ========================================== //
 
 /// Private module that contains the sealing trait
 ///
@@ -12,13 +21,21 @@ mod private {
     pub trait Sealed {}
 }
 
+// =============== //
+// 2. Sealed Trait //
+// =============== //
+
+// -------------- //
+// Message Schema //
+// -------------- //
+
 /// A sealed trait for message schemas
 ///
 /// Only types within this crate can implement MessageSchema,
 /// ensuring API stability and type safety.
 pub trait MessageSchema: private::Sealed {
     /// The Rust type that represents this message
-    type Message: Clone + std::fmt::Debug;
+    type Message: Clone + Debug;
 
     /// Serialize a message to bytes
     fn serialize(message: &Self::Message) -> Vec<u8>;
@@ -33,50 +50,70 @@ pub trait MessageSchema: private::Sealed {
     fn validate(message: &Self::Message) -> Result<(), ValidationError>;
 }
 
+// 3. Typed Message //
+
+// A message struct with MessageSchema as a trait bound.
+
 /// A type-safe message container
 ///
 /// Messages are parameterized by their schema, ensuring
 /// compile-time guarantees about message structure.
+/// see examples
 #[derive(Debug, Clone)]
 pub struct TypedMessage<S: MessageSchema> {
     pub id: MessageId,
     pub content: S::Message,
-    pub schema_type: std::marker::PhantomData<S>,
+    pub schema_type: PhantomData<S>,
 }
 
+// calls function in the MessageSchema
 impl<S: MessageSchema> TypedMessage<S> {
     /// Create a new typed message
     pub fn new(id: MessageId, content: S::Message) -> Result<Self, ValidationError> {
+        // calling function from the trait
         S::validate(&content)?;
 
         Ok(TypedMessage {
             id,
             content,
-            schema_type: std::marker::PhantomData,
+            schema_type: PhantomData,
         })
     }
 
     /// Serialize the message to bytes
     pub fn to_bytes(&self) -> Vec<u8> {
+        // calling function from the trait
         S::serialize(&self.content)
     }
 
     /// Get the schema identifier
     pub fn schema_id(&self) -> &'static str {
+        // calling function from the trait
         S::schema_id()
     }
 }
 
-/// Errors that can occur during schema operations
+// ====== //
+// Errors //
+// ====== //
+
+// Maybe errors should be put in file error.rs.
+
+// -------------- //
+// A. SchemaError //
+// -------------- //
+
+/// Errors that can occur during schema operations (deserialization function)
+/// Could be called DeserializationError.
 #[derive(Debug, Clone)]
 pub enum SchemaError {
     InvalidFormat,
     UnknownVersion,
     CorruptedData,
-    DeserializationFailed(String),
+    DeserializationFailed(String), // actually the only one really used (in deserialization functions)
 }
 
-impl std::fmt::Display for SchemaError {
+impl Display for SchemaError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SchemaError::InvalidFormat => write!(f, "Invalid message format"),
@@ -87,18 +124,22 @@ impl std::fmt::Display for SchemaError {
     }
 }
 
-impl std::error::Error for SchemaError {}
+impl Error for SchemaError {}
 
-/// Errors that can occur during message validation
+// ------------------ //
+// B. ValidationError //
+// ------------------ //
+
+/// Errors that can occur during message validation (validation function)
 #[derive(Debug, Clone)]
 pub enum ValidationError {
     FieldRequired(String),
     FieldTooLong(String, usize),
     InvalidValue(String),
-    InvalidRange(String, i64, i64),
+    InvalidRange(String, i64, i64), // only one not really used
 }
 
-impl std::fmt::Display for ValidationError {
+impl Display for ValidationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ValidationError::FieldRequired(field) => write!(f, "Required field missing: {}", field),
@@ -113,9 +154,17 @@ impl std::fmt::Display for ValidationError {
     }
 }
 
-impl std::error::Error for ValidationError {}
+impl Error for ValidationError {}
+
+// =============== //
+// Message Schemas //
+// =============== //
 
 // Predefined message schemas
+
+// ------------- //
+// A. JsonSchema //
+// ------------- //
 
 /// JSON schema using serde_json for flexible message structures
 pub struct JsonSchema;
@@ -147,6 +196,12 @@ impl MessageSchema for JsonSchema {
         Ok(())
     }
 }
+
+pub type JsonMessage = TypedMessage<JsonSchema>;
+
+// ------------- //
+// B. TextSchema //
+// ------------- //
 
 /// Text schema for simple string messages
 pub struct TextSchema;
@@ -187,9 +242,15 @@ impl MessageSchema for TextSchema {
     }
 }
 
+pub type TextMessage = TypedMessage<TextSchema>;
+
+// =============== //
+// Message Handler //
+// =============== //
+
 /// Type-safe message handler that works with any valid schema
 pub struct MessageHandler<S: MessageSchema> {
-    schema_type: std::marker::PhantomData<S>,
+    schema_type: PhantomData<S>,
 }
 
 impl<S: MessageSchema> Default for MessageHandler<S> {
@@ -202,28 +263,28 @@ impl<S: MessageSchema> MessageHandler<S> {
     /// Create a new message handler for a specific schema
     pub fn new() -> Self {
         Self {
-            schema_type: std::marker::PhantomData,
+            schema_type: PhantomData,
         }
     }
 
     /// Process a typed message
-    pub fn handle(&self, message: &TypedMessage<S>) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn handle(&self, message: &TypedMessage<S>) -> Result<(), Box<dyn Error>> {
         println!("Handling message with schema: {}", message.schema_id());
         println!("Message content: {:?}", message.content);
         Ok(())
     }
 
     /// Deserialize and handle raw bytes
-    pub fn handle_bytes(
-        &self,
-        id: MessageId,
-        bytes: &[u8],
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn handle_bytes(&self, id: MessageId, bytes: &[u8]) -> Result<(), Box<dyn Error>> {
         let content = S::deserialize(bytes)?;
         let message = TypedMessage::new(id, content)?;
         self.handle(&message)
     }
 }
+
+// ===== //
+// Tests //
+// ===== //
 
 #[cfg(test)]
 mod tests {
