@@ -256,7 +256,7 @@ pub struct DatabaseConfig {
     pub ssl_enabled: bool,
 }
 
-/// Parse database config using pattern matching
+/// Parse database config using pattern matching (not used)
 pub fn parse_database_config(config: &ConfigValue) -> Result<DatabaseConfig> {
     match config {
         ConfigValue::Object(obj) => {
@@ -445,7 +445,7 @@ mod tests {
 
     #[test]
     fn test_pattern_matching() {
-        let patterns = vec![
+        let patterns = [
             MessagePattern::Exact("hello".to_string()),
             MessagePattern::Prefix("sys".to_string()),
             MessagePattern::Contains("error".to_string()),

@@ -194,18 +194,23 @@ fn demonstrate_pattern_matching() -> std::result::Result<(), Box<dyn std::error:
 
     // Demonstrate connection state machine
     println!("\nConnection State Machine:");
-    let mut state = ConnectionState::Disconnected;
     let events = vec![
         ConnectionEvent::Connect,
-        ConnectionEvent::Connect, // Connection established
+        ConnectionEvent::Connect,
         ConnectionEvent::Authenticate(123, "token123".to_string()),
         ConnectionEvent::Error(500),
         ConnectionEvent::Retry,
     ];
 
+    let mut state = ConnectionState::Disconnected;
+    println!("Starting State: {:?}", state);
+
     for event in events {
         let (new_state, actions) = handle_connection_event(state, event);
-        println!("✓ State transition, actions: {:?}", actions);
+        println!(
+            "✓ State transition, actions: {:?},new state: {:?}",
+            actions, new_state,
+        );
         state = new_state;
     }
 
