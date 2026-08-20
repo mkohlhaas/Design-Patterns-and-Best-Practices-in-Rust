@@ -62,15 +62,15 @@ impl ConnectionPool {
             .map_err(|_| SamsaError::resource("Lock poisoned"))?;
 
         // Try to reuse an existing connection
-        if let Some(mut conn) = connections.pop_front() {
-            if conn.is_healthy() {
-                conn.mark_used();
-                return Ok(ConnectionGuard {
-                    connection: Some(conn),
-                    pool: self.clone(),
-                    acquired_at: Instant::now(),
-                });
-            }
+        if let Some(mut conn) = connections.pop_front()
+            && conn.is_healthy()
+        {
+            conn.mark_used();
+            return Ok(ConnectionGuard {
+                connection: Some(conn),
+                pool: self.clone(),
+                acquired_at: Instant::now(),
+            });
         }
 
         // Create a new connection if under limit
@@ -95,10 +95,11 @@ impl ConnectionPool {
 
     /// Return a connection to the pool
     fn return_connection(&self, connection: Connection) {
-        if let Ok(mut connections) = self.connections.lock() {
-            if connection.is_healthy() && connections.len() < self.max_connections {
-                connections.push_back(connection);
-            }
+        if let Ok(mut connections) = self.connections.lock()
+            && connection.is_healthy()
+            && connections.len() < self.max_connections
+        {
+            connections.push_back(connection);
         }
     }
 }
@@ -177,10 +178,10 @@ impl<'a, T> TransactionGuard<'a, T> {
 
 impl<'a, T> Drop for TransactionGuard<'a, T> {
     fn drop(&mut self) {
-        if !self.committed {
-            if let Some(rollback) = self.rollback_fn.take() {
-                rollback(self.data);
-            }
+        if !self.committed
+            && let Some(rollback) = self.rollback_fn.take()
+        {
+            rollback(self.data);
         }
     }
 }

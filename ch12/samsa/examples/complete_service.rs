@@ -137,6 +137,7 @@ fn demonstrate_error_handling() -> Result<(), Box<dyn std::error::Error>> {
     println!("Error Handling Patterns:");
 
     // Pattern: Result composition with ?
+    // TODO: create a samsa.conf file (so not using the default config)
     let config = SamsaConfig::load()?;
 
     // Pattern: Option to Result conversion
