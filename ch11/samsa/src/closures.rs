@@ -5,13 +5,21 @@
 
 use crate::message::{Message, current_timestamp};
 use std::collections::HashMap;
+use std::error::Error;
 use std::sync::{Arc, Mutex};
 
 /// Configurable message filter using closures
+// TODO: `name` should be first
 pub struct MessageFilter<F> {
     predicate: F,
     name: String,
 }
+
+// We'd need to box every predicate!
+// struct MessageFilterFoo {
+//     name: String,
+//     predicate: dyn Fn(&Message) -> bool,
+// }
 
 impl<F> MessageFilter<F>
 where
@@ -33,7 +41,7 @@ where
     where
         G: Fn(&Message) -> bool,
     {
-        let combined_name = format!("{} AND {}", self.name, other.name);
+        let combined_name = format!("{} & {}", self.name, other.name);
         MessageFilter::new(combined_name, move |msg| {
             self.matches(msg) && other.matches(msg)
         })
@@ -164,9 +172,11 @@ pub fn create_routing_strategies() -> MessageRouter {
 /// Event handler type for the event system
 pub type EventHandler<T> = Box<dyn Fn(&T) + Send + Sync>;
 
+type EventType = String;
+
 /// Simple event bus using closures
 pub struct EventBus<T> {
-    handlers: Arc<Mutex<HashMap<String, Vec<EventHandler<T>>>>>,
+    handlers: Arc<Mutex<HashMap<EventType, Vec<EventHandler<T>>>>>,
 }
 
 impl<T> Default for EventBus<T>
@@ -208,6 +218,7 @@ where
         }
     }
 
+    // not used
     pub fn subscribe_with_filter<F, P>(&self, event_type: &str, predicate: P, handler: F)
     where
         F: Fn(&T) + Send + Sync + 'static,
@@ -231,8 +242,7 @@ pub enum SystemEvent {
 }
 
 /// Processing pipeline using closures
-type PipelineStage<T> =
-    Box<dyn Fn(T) -> Result<T, Box<dyn std::error::Error + Send + Sync>> + Send + Sync>;
+type PipelineStage<T> = Box<dyn Fn(T) -> Result<T, Box<dyn Error + Send + Sync>> + Send + Sync>;
 
 pub struct Pipeline<T> {
     stages: Vec<PipelineStage<T>>,
@@ -257,7 +267,7 @@ where
 
     pub fn add_stage<F>(mut self, stage: F) -> Self
     where
-        F: Fn(T) -> Result<T, Box<dyn std::error::Error + Send + Sync>> + Send + Sync + 'static,
+        F: Fn(T) -> Result<T, Box<dyn Error + Send + Sync>> + Send + Sync + 'static,
     {
         self.stages.push(Box::new(stage));
         self
@@ -283,7 +293,7 @@ where
         })
     }
 
-    pub fn execute(&self, input: T) -> Result<T, Box<dyn std::error::Error + Send + Sync>> {
+    pub fn execute(&self, input: T) -> Result<T, Box<dyn Error + Send + Sync>> {
         self.stages.iter().try_fold(input, |acc, stage| stage(acc))
     }
 }
@@ -419,10 +429,10 @@ where
         let mut last_call = self.last_call.lock().unwrap();
         let now = std::time::Instant::now();
 
-        if let Some(last) = *last_call {
-            if now.duration_since(last) < self.interval {
-                return; // Rate limited
-            }
+        if let Some(last) = *last_call
+            && now.duration_since(last) < self.interval
+        {
+            return; // Rate limited
         }
 
         *last_call = Some(now);

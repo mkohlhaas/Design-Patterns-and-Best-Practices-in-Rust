@@ -14,7 +14,10 @@ use samsa::*;
 use std::collections::HashMap;
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    println!("=== Samsa Functional Programming Patterns Demo ===\n");
+    println!("================================================");
+    println!("== Samsa Functional Programming Patterns Demo ==");
+    println!("================================================");
+    println!();
 
     // 1. Function Pipelines
     demonstrate_function_pipelines()?;
@@ -32,8 +35,9 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 }
 
 fn demonstrate_function_pipelines() -> std::result::Result<(), Box<dyn std::error::Error>> {
+    println!("=============================================");
     println!("1. Function Pipelines for Data Transformation");
-    println!("============================================");
+    println!("=============================================");
 
     // Create subscription events for processing
     let events = vec![
@@ -94,6 +98,7 @@ fn demonstrate_function_pipelines() -> std::result::Result<(), Box<dyn std::erro
 }
 
 fn demonstrate_type_classes() -> std::result::Result<(), Box<dyn std::error::Error>> {
+    println!("===========================");
     println!("2. Generics as Type Classes");
     println!("===========================");
 
@@ -145,6 +150,7 @@ fn demonstrate_type_classes() -> std::result::Result<(), Box<dyn std::error::Err
 }
 
 fn demonstrate_pattern_matching() -> std::result::Result<(), Box<dyn std::error::Error>> {
+    println!("============================");
     println!("3. Advanced Pattern Matching");
     println!("============================");
 
@@ -219,8 +225,9 @@ fn demonstrate_pattern_matching() -> std::result::Result<(), Box<dyn std::error:
 }
 
 fn demonstrate_closure_patterns() -> std::result::Result<(), Box<dyn std::error::Error>> {
+    println!("=============================================");
     println!("4. Closure Patterns for Configurable Behavior");
-    println!("==============================================");
+    println!("=============================================");
 
     // Create message filters using closures
     let large_filter =
