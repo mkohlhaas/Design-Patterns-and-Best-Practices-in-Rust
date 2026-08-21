@@ -8,6 +8,7 @@
 
 use crate::error::{Result, SamsaError};
 use std::collections::VecDeque;
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::{Duration, Instant};
 
@@ -221,7 +222,7 @@ impl<'a, T> TimedLockGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::Deref for TimedLockGuard<'a, T> {
+impl<'a, T> Deref for TimedLockGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -229,7 +230,7 @@ impl<'a, T> std::ops::Deref for TimedLockGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::DerefMut for TimedLockGuard<'a, T> {
+impl<'a, T> DerefMut for TimedLockGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.guard.as_mut().unwrap()
     }

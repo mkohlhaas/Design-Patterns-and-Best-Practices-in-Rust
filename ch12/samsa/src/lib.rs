@@ -41,7 +41,7 @@ pub use type_classes::{
 };
 
 // Chapter 12 additions - Unique Rust Features
-pub use config::{BrokerConfig, ConfigBuilder, SamsaConfig};
+pub use config::{BrokerConfig, BrokerConfigBuilder, SamsaConfig};
 pub use resources::{ConnectionGuard, ConnectionPool, TransactionGuard};
 pub use service::{BrokerService, ServiceManager};
 

@@ -8,15 +8,11 @@
 //! - Unique Rust features (Ch 12)
 
 use samsa::{
-    // Service management (Ch 12)
-    BrokerService,
-    ConfigBuilder,
-    // Resources (Ch 12)
-    ConnectionPool,
-    // Core types (Ch 9)
-    Message,
-    // Configuration (Ch 12)
-    SamsaConfig,
+    BrokerConfigBuilder,
+    BrokerService,  // Service management (Ch 12)
+    ConnectionPool, // Resources (Ch 12)
+    Message,        // Core types (Ch 9)
+    SamsaConfig,    // Configuration (Ch 12)
     ServiceManager,
 };
 
@@ -26,9 +22,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // PATTERN: Configuration with fallbacks (Ch 12)
     println!("1. Loading Configuration...");
     let config = load_configuration()?;
+    // println!("{:#?}", config);
     println!("   ✓ Configuration loaded successfully");
-    println!("   - Broker port: {}", config.broker.port);
-    println!("   - Max connections: {}", config.broker.max_connections);
+    println!("     - Broker port: {}", config.broker_config.port);
+    println!(
+        "     - Max connections: {}",
+        config.broker_config.max_connections
+    );
     println!();
 
     // PATTERN: Service lifecycle with RAII (Ch 12)
@@ -75,7 +75,7 @@ fn load_configuration() -> Result<SamsaConfig, Box<dyn std::error::Error>> {
             println!("   Using default configuration");
 
             // Build custom configuration using builder pattern
-            let broker_config = ConfigBuilder::new()
+            let broker_config = BrokerConfigBuilder::new()
                 .port(8080)?
                 .max_connections(100)?
                 .buffer_size(4096)?
@@ -83,7 +83,7 @@ fn load_configuration() -> Result<SamsaConfig, Box<dyn std::error::Error>> {
                 .build();
 
             Ok(SamsaConfig {
-                broker: broker_config,
+                broker_config,
                 log_level: "info".to_string(),
                 storage_path: "memory://".to_string(),
             })
@@ -137,17 +137,16 @@ fn demonstrate_error_handling() -> Result<(), Box<dyn std::error::Error>> {
     println!("Error Handling Patterns:");
 
     // Pattern: Result composition with ?
-    // TODO: create a samsa.conf file (so not using the default config)
     let config = SamsaConfig::load()?;
 
     // Pattern: Option to Result conversion
-    let _port = Some(config.broker.port)
+    let _port = Some(config.broker_config.port)
         .filter(|&p| p > 1024)
         .ok_or("Invalid port")?;
 
     // Pattern: Error context with map_err
-    let _service =
-        BrokerService::new(config.broker).map_err(|e| format!("Failed to start service: {}", e))?;
+    let _service = BrokerService::new(config.broker_config)
+        .map_err(|e| format!("Failed to start service: {}", e))?;
 
     Ok(())
 }
@@ -172,7 +171,7 @@ fn demonstrate_block_expressions() {
 
     // Pattern: Complex initialization in block
     let _config = {
-        let mut builder = ConfigBuilder::new();
+        let mut builder = BrokerConfigBuilder::new();
         builder = builder.port(9000).unwrap();
         builder = builder.max_connections(50).unwrap();
         builder.build()

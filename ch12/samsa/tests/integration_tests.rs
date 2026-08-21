@@ -6,9 +6,9 @@
 use samsa::{
     Broker,
     BrokerConfig,
+    BrokerConfigBuilder,
     // Service management
     BrokerService,
-    ConfigBuilder,
     // Resources
     ConnectionPool,
     Consumer,
@@ -121,11 +121,11 @@ fn test_multiple_consumers_independent_positions() {
 fn test_configuration_loading_and_validation() {
     // Test default configuration
     let config = SamsaConfig::default();
-    assert_eq!(config.broker.port, 8080);
-    assert_eq!(config.broker.max_connections, 1000);
+    assert_eq!(config.broker_config.port, 8080);
+    assert_eq!(config.broker_config.max_connections, 1000);
 
     // Test builder pattern with validation
-    let result = ConfigBuilder::new()
+    let result = BrokerConfigBuilder::new()
         .port(9000)
         .unwrap()
         .max_connections(500)
@@ -138,7 +138,7 @@ fn test_configuration_loading_and_validation() {
     assert!(result.enable_metrics);
 
     // Test invalid port validation
-    let invalid = ConfigBuilder::new().port(80);
+    let invalid = BrokerConfigBuilder::new().port(80);
     assert!(invalid.is_err());
 }
 

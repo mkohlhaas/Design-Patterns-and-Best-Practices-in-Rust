@@ -87,7 +87,7 @@ impl ServiceManager {
     pub fn start(config: SamsaConfig) -> Result<Self> {
         // Block expression for service initialization
         let broker_service = {
-            let service = BrokerService::new(config.broker)?;
+            let service = BrokerService::new(config.broker_config)?;
             Some(service)
         };
 
@@ -130,6 +130,7 @@ impl Drop for ServiceManager {
 }
 
 /// Request processing pipeline demonstrating block expressions
+/// Not used
 pub fn process_request(message: Message, service: &BrokerService) -> Result<ProcessingResult> {
     // Block expression for validation
     let validated = {
@@ -145,11 +146,9 @@ pub fn process_request(message: Message, service: &BrokerService) -> Result<Proc
     // Block expression for processing with metrics
     let offset = {
         let result = service.publish(validated)?;
-
         if service.metrics_enabled() {
-            // Would record metrics here
+            // Would record metrics here ... 😪
         }
-
         result
     };
 
@@ -169,11 +168,11 @@ pub struct ProcessingResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::ConfigBuilder;
+    use crate::config::BrokerConfigBuilder;
 
     #[test]
     fn test_service_creation() {
-        let config = ConfigBuilder::new()
+        let config = BrokerConfigBuilder::new()
             .port(9000)
             .unwrap()
             .max_connections(10)

@@ -14,7 +14,7 @@ use std::time::Duration;
 /// Complete Samsa service configuration
 #[derive(Debug, Clone)]
 pub struct SamsaConfig {
-    pub broker: BrokerConfig,
+    pub broker_config: BrokerConfig,
     pub log_level: String,
     pub storage_path: String,
 }
@@ -57,14 +57,14 @@ impl SamsaConfig {
                             .trim()
                             .parse()
                             .map_err(|_| SamsaError::config("Invalid port"))?;
-                        config.broker.port = port;
+                        config.broker_config.port = port;
                     }
                     "max_connections" => {
                         let max = value
                             .trim()
                             .parse()
                             .map_err(|_| SamsaError::config("Invalid max_connections"))?;
-                        config.broker.max_connections = max;
+                        config.broker_config.max_connections = max;
                     }
                     "log_level" => {
                         config.log_level = value.trim().to_string();
@@ -77,7 +77,7 @@ impl SamsaConfig {
                             .trim()
                             .parse()
                             .map_err(|_| SamsaError::config("Invalid buffer_size"))?;
-                        config.broker.buffer_size = NonZeroUsize::new(size)
+                        config.broker_config.buffer_size = NonZeroUsize::new(size)
                             .ok_or_else(|| SamsaError::config("buffer_size must be positive"))?;
                     }
                     "connection_timeout" => {
@@ -85,7 +85,7 @@ impl SamsaConfig {
                             .trim()
                             .parse()
                             .map_err(|_| SamsaError::config("Invalid connection_timeout"))?;
-                        config.broker.connection_timeout = Duration::from_secs(timeout);
+                        config.broker_config.connection_timeout = Duration::from_secs(timeout);
                     }
                     _ => {} // Ignore unknown keys
                 }
@@ -98,7 +98,7 @@ impl SamsaConfig {
 
     /// Validate configuration
     fn validate(&self) -> Result<()> {
-        self.broker.validate()?;
+        self.broker_config.validate()?;
 
         if self.log_level.is_empty() {
             return Err(SamsaError::config("log_level cannot be empty"));
@@ -111,7 +111,7 @@ impl SamsaConfig {
 impl Default for SamsaConfig {
     fn default() -> Self {
         Self {
-            broker: BrokerConfig::default(),
+            broker_config: BrokerConfig::default(),
             log_level: "info".to_string(),
             storage_path: "memory://".to_string(),
         }
@@ -130,8 +130,8 @@ pub struct BrokerConfig {
 
 impl BrokerConfig {
     /// Create a new builder for BrokerConfig
-    pub fn builder() -> ConfigBuilder {
-        ConfigBuilder::new()
+    pub fn builder() -> BrokerConfigBuilder {
+        BrokerConfigBuilder::new()
     }
 
     /// Validate broker configuration
@@ -167,7 +167,7 @@ impl Default for BrokerConfig {
 }
 
 /// Builder for BrokerConfig demonstrating builder pattern with validation
-pub struct ConfigBuilder {
+pub struct BrokerConfigBuilder {
     port: Option<u16>,
     max_connections: Option<usize>,
     buffer_size: Option<NonZeroUsize>,
@@ -175,7 +175,7 @@ pub struct ConfigBuilder {
     enable_metrics: bool,
 }
 
-impl ConfigBuilder {
+impl BrokerConfigBuilder {
     pub fn new() -> Self {
         Self {
             port: None,
@@ -233,7 +233,7 @@ impl ConfigBuilder {
     }
 }
 
-impl Default for ConfigBuilder {
+impl Default for BrokerConfigBuilder {
     fn default() -> Self {
         Self::new()
     }
@@ -246,8 +246,8 @@ mod tests {
     #[test]
     fn test_default_config() {
         let config = SamsaConfig::default();
-        assert_eq!(config.broker.port, 8080);
-        assert_eq!(config.broker.max_connections, 1000);
+        assert_eq!(config.broker_config.port, 8080);
+        assert_eq!(config.broker_config.max_connections, 1000);
     }
 
     #[test]
@@ -280,11 +280,11 @@ mod tests {
     #[test]
     fn test_builder_validation() {
         // Attempting to set a reserved port should fail
-        let result = ConfigBuilder::new().port(80);
+        let result = BrokerConfigBuilder::new().port(80);
         assert!(result.is_err());
 
         // Valid port should succeed
-        let result = ConfigBuilder::new().port(8080);
+        let result = BrokerConfigBuilder::new().port(8080);
         assert!(result.is_ok());
     }
 }
