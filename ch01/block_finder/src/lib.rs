@@ -23,6 +23,7 @@ impl Read for BlockReader<'_> {
 fn new_block_reader(message: Vec<u8>, block_id: u64) -> BlockReader<'static> {
     let (pos, count) = find_block(&message, block_id);
     let slice = &message[pos..(pos + count)];
+
     BlockReader {
         message,
         block_reader: Cursor::new(slice),
